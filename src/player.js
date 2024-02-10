@@ -1,6 +1,5 @@
-import { PLAYER_MOVE_SPEED, BLOCK_SIZE, MAX_HEIGHT } from "./config.js";
-import { BlockType } from "./block.js";
-import Utils from "./utils.js";
+import { PLAYER_MOVE_SPEED, BLOCK_SIZE } from "./config.js";
+import { Block, BlockType } from "./block.js";
 
 export default class Player {
   constructor(world, width, height) {
@@ -12,10 +11,10 @@ export default class Player {
     this.yVel = 0;
     this.xVel = 0;
 
-    this.isOnGround = true;
-
     this.breakingBlock = null;
     this.breakingBlockAmount = 0;
+
+    this.isFalling = true;
   }
 
   breakBlock(block, deltaTime) {
@@ -31,51 +30,92 @@ export default class Player {
     }
   }
 
-  physics(deltaTime, xMoveDirection) {
-    const newXVel = deltaTime * xMoveDirection * PLAYER_MOVE_SPEED;
-    const newYVel = Utils.clamp(
-      this.yVel + deltaTime * 0.981,
-      -100,
-      55 * deltaTime,
-    );
+  physics(deltaTime, xMoveDirection, jump) {
+    this.#gravity(deltaTime);
+    this.#xMovement(deltaTime, xMoveDirection);
+    if (jump) this.#jump(deltaTime);
 
-    const nextBlockXLeft = this.world.getBlockAtBlockIndex(
-      this.x + newXVel - this.width * 0.5,
-      this.y,
-    );
-    const nextBlockXRight = this.world.getBlockAtBlockIndex(
-      this.x + newXVel + this.width * 0.5,
-      this.y,
-    );
-    this.xVel =
-      (nextBlockXLeft === undefined || nextBlockXLeft.type === BlockType.AIR) &&
-      (nextBlockXRight === undefined || nextBlockXRight.type === BlockType.AIR)
-        ? newXVel
-        : 0;
-
-    const nextBlockYLeft = this.world.getBlockAtBlockIndex(
-      this.x - this.width * 0.5,
-      this.y + newYVel,
-    );
-    const nextBlockYRight = this.world.getBlockAtBlockIndex(
-      this.x + this.width * 0.5,
-      this.y + newYVel,
-    );
-    if (
-      (nextBlockYLeft === undefined || nextBlockYLeft.type === BlockType.AIR) &&
-      (nextBlockYRight === undefined || nextBlockYRight.type === BlockType.AIR)
-    ) {
-      this.yVel = newYVel;
-      this.isOnGround = false;
-    } else {
-      this.yVel = 0;
-      this.isOnGround = true;
-    }
-
-    this.x += this.xVel;
-    this.y += this.yVel;
+    this.#updatePositionByVelocity(deltaTime);
 
     this.world.generateChunks(this);
+  }
+
+  #gravity(deltaTime) {
+    this.yVel += 0.98;
+    const bottomCollision = this.#willCollideBottom(deltaTime);
+    if (bottomCollision) this.#stopGravity(bottomCollision);
+    else this.isFalling = true;
+  }
+
+  #stopGravity(bottomCollision) {
+    this.yVel = 0;
+    this.y = bottomCollision.yIndex - 0.001;
+    this.isFalling = false;
+  }
+
+  #xMovement(deltaTime, direction) {
+    this.xVel = direction * PLAYER_MOVE_SPEED;
+    const xCollision = this.#willCollideX(direction, deltaTime);
+    if (xCollision) this.#stopXMovement(xCollision, direction);
+  }
+
+  #stopXMovement(xCollision, direction) {
+    this.xVel = 0;
+    this.x =
+      direction > 0
+        ? xCollision.xIndex - 0.01 - this.width * 0.5 // right
+        : xCollision.xIndex + 1 + 0.01 + this.width * 0.5; // left
+  }
+
+  #jump(deltaTime) {
+    if (this.isFalling) return;
+
+    this.yVel = -11.5;
+  }
+
+  #updatePositionByVelocity(deltaTime) {
+    this.x += this.xVel * deltaTime;
+    this.y += this.yVel * deltaTime;
+  }
+
+  #willCollideX(dir, deltaTime) {
+    return (
+      Block.hasCollision(
+        this.world.getBlockAtBlockIndex(
+          this.x + dir * 0.5 * this.width + this.xVel * deltaTime,
+          this.y,
+        ),
+      ) ||
+      Block.hasCollision(
+        this.world.getBlockAtBlockIndex(
+          this.x + dir * 0.5 * this.width + this.xVel * deltaTime,
+          this.y - this.height * 0.5,
+        ),
+      ) ||
+      Block.hasCollision(
+        this.world.getBlockAtBlockIndex(
+          this.x + dir * 0.5 * this.width + this.xVel * deltaTime,
+          this.y - this.height,
+        ),
+      )
+    );
+  }
+
+  #willCollideBottom(deltaTime) {
+    return (
+      Block.hasCollision(
+        this.world.getBlockAtBlockIndex(
+          this.x - this.width * 0.5,
+          this.y + this.yVel * deltaTime,
+        ),
+      ) ||
+      Block.hasCollision(
+        this.world.getBlockAtBlockIndex(
+          this.x + this.width * 0.5,
+          this.y + this.yVel * deltaTime,
+        ),
+      )
+    );
   }
 
   draw(p5) {

@@ -18,9 +18,9 @@ export default class Camera {
     );
   }
 
-  followPlayer(player) {
-    this.targetX = player.x - player.xVel;
-    this.targetY = -(player.y + player.yVel - 3);
+  followPlayer(player, deltaTime) {
+    this.targetX = player.x - player.xVel * deltaTime;
+    this.targetY = -(player.y - player.yVel * deltaTime - 3);
   }
 
   follow(p5) {

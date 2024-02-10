@@ -18,11 +18,11 @@ export class Block {
     this.breakTime = 1;
 
     this.localXIndex = localXIndex;
-    this.globalXIndex = this.chunkXIndex * CHUNK_WIDTH + this.localXIndex;
+    this.xIndex = this.chunkXIndex * CHUNK_WIDTH + this.localXIndex;
 
     this.yIndex = yIndex;
 
-    this.screenX = this.globalXIndex * BLOCK_SIZE;
+    this.screenX = this.xIndex * BLOCK_SIZE;
     this.screenY = this.yIndex * BLOCK_SIZE;
 
     this.type = type || BlockType.AIR;
@@ -53,7 +53,7 @@ export class Block {
     p5.stroke(0);
     p5.fill(255);
     p5.text(
-      `${this.type} (${this.globalXIndex},${this.yIndex}) Shadow: ${this.shadowLevel}`,
+      `${this.type} (${this.xIndex},${this.yIndex}) Shadow: ${this.shadowLevel}`,
       this.screenX,
       this.screenY - 10,
     );
@@ -69,12 +69,10 @@ export class Block {
     const limit = 3;
     for (let i = 1; i <= limit; i++) {
       smooth += (
-        this.world.getBlockAtBlockIndex(this.globalXIndex - i, this.yIndex) ||
-        this
+        this.world.getBlockAtBlockIndex(this.xIndex - i, this.yIndex) || this
       ).columnHeight;
       smooth += (
-        this.world.getBlockAtBlockIndex(this.globalXIndex + i, this.yIndex) ||
-        this
+        this.world.getBlockAtBlockIndex(this.xIndex + i, this.yIndex) || this
       ).columnHeight;
     }
     smooth /= 2 * limit + 1;
@@ -87,5 +85,9 @@ export class Block {
 
   static canBreak(block) {
     return block && block.type !== BlockType.AIR && block.breakTime > 0;
+  }
+
+  static hasCollision(block) {
+    return block && block.type !== BlockType.AIR ? block : false;
   }
 }

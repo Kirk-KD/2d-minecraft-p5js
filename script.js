@@ -46,7 +46,8 @@ new p5((p5) => {
 
   p5.draw = () => {
     let now = p5.millis() / 1000;
-    deltaTime = now - prevFrameTime;
+    // deltaTime = now - prevFrameTime;
+    deltaTime = p5.deltaTime * 0.001;
     prevFrameTime = now;
 
     p5.push();
@@ -58,7 +59,7 @@ new p5((p5) => {
     keyboardInput(p5);
 
     camera.calibrateDrawingPosition(p5);
-    camera.followPlayer(player);
+    camera.followPlayer(player, deltaTime);
     camera.follow(p5);
 
     player.draw(p5);
@@ -96,9 +97,8 @@ function keyboardInput(p5) {
 
   if (p5.keyIsDown(K_A)) dx = -1 - PLAYER_SPRINT_BONUS * shift;
   if (p5.keyIsDown(K_D)) dx = 1 + PLAYER_SPRINT_BONUS * shift;
-  if (p5.keyIsDown(K_SPACE) && player.isOnGround) player.yVel = -0.25;
 
   camera.peek(p5.keyIsDown(K_W), p5.keyIsDown(K_S));
 
-  player.physics(deltaTime, dx);
+  player.physics(deltaTime, dx, p5.keyIsDown(K_SPACE));
 }
