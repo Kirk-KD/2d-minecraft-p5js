@@ -41,8 +41,4 @@ export default class Camera {
       (p5.mouseY - HEIGHT / 2) / BLOCK_SIZE - this.y,
     ];
   }
-
-  getYIndexAtMouse(p5) {
-    return (p5.mouseY - this.y) / BLOCK_SIZE;
-  }
 }

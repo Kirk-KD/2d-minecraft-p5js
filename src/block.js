@@ -15,6 +15,8 @@ export class Block {
     this.columnHeight = columnHeight;
     this.chunkXIndex = chunkXIndex;
 
+    this.breakTime = 1;
+
     this.localXIndex = localXIndex;
     this.globalXIndex = this.chunkXIndex * CHUNK_WIDTH + this.localXIndex;
 
@@ -38,6 +40,13 @@ export class Block {
       p5.fill(0, 0, 0, 255 * this.shadowLevel);
       p5.rect(this.screenX, this.screenY, BLOCK_SIZE, BLOCK_SIZE);
     }
+  }
+
+  drawHighlight(p5) {
+    p5.stroke(0);
+    p5.strokeWeight(2);
+    p5.noFill();
+    p5.square(this.screenX, this.screenY, BLOCK_SIZE);
   }
 
   drawDebug(p5) {
@@ -70,5 +79,13 @@ export class Block {
     }
     smooth /= 2 * limit + 1;
     return Utils.clamp((this.yIndex - smooth) / LIGHT_DISTANCE, 0, 1);
+  }
+
+  static canHighlight(block) {
+    return block && block.type !== BlockType.AIR;
+  }
+
+  static canBreak(block) {
+    return block && block.type !== BlockType.AIR && block.breakTime > 0;
   }
 }

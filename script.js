@@ -12,10 +12,12 @@ import Camera from "./src/camera.js";
 import World from "./src/world.js";
 import Utils from "./src/utils.js";
 import Player from "./src/player.js";
+import Crosshair from "./src/crosshair.js";
 
 let camera;
 let world;
 let player;
+let crosshair;
 
 let p5Div;
 
@@ -34,6 +36,7 @@ new p5((p5) => {
     world = new World(p5);
     camera = new Camera(world);
     player = new Player(world, 0.8, 1.8);
+    crosshair = new Crosshair(world, camera, player);
   };
 
   p5.setup = () => {
@@ -61,6 +64,9 @@ new p5((p5) => {
     player.draw(p5);
     world.draw(p5, camera);
     if (debug) world.drawDebugBlock(p5, camera);
+
+    crosshair.update(p5, deltaTime);
+    crosshair.draw(p5);
 
     p5.pop();
 

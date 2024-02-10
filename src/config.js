@@ -9,7 +9,7 @@ export const LIGHT_DISTANCE = 8;
 
 export const PLAYER_MOVE_SPEED = 3;
 export const PLAYER_SPRINT_BONUS = 0.5;
-export const PLAYER_REACH = 4;
+export const PLAYER_REACH = 5;
 
 export function setWidth(width) {
   WIDTH = width;

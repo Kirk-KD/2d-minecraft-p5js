@@ -13,6 +13,22 @@ export default class Player {
     this.xVel = 0;
 
     this.isOnGround = true;
+
+    this.breakingBlock = null;
+    this.breakingBlockAmount = 0;
+  }
+
+  breakBlock(block, deltaTime) {
+    if (this.breakingBlock !== block) {
+      this.breakingBlock = block;
+      this.breakingBlockAmount = 0;
+    }
+    this.breakingBlockAmount += deltaTime;
+    if (this.breakingBlockAmount >= this.breakingBlock.breakTime) {
+      this.breakingBlockAmount = 0;
+      this.breakingBlock.type = BlockType.AIR;
+      this.breakingBlock = null;
+    }
   }
 
   physics(deltaTime, xMoveDirection) {
@@ -71,5 +87,9 @@ export default class Player {
       BLOCK_SIZE * this.height,
     );
     p5.noStroke();
+  }
+
+  getEyePosition() {
+    return [this.x + this.width / 2, this.y - this.height - 0.2];
   }
 }
