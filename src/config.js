@@ -11,6 +11,8 @@ export const PLAYER_MOVE_SPEED = 3;
 export const PLAYER_SPRINT_BONUS = 0.5;
 export const PLAYER_REACH = 5;
 
+export const CROSSHAIR_SIZE = 20;
+
 export function setWidth(width) {
   WIDTH = width;
   console.log("w: ", WIDTH);

@@ -2,7 +2,8 @@ import { PLAYER_MOVE_SPEED, BLOCK_SIZE } from "./config.js";
 import { Block, BlockType } from "./block.js";
 
 export default class Player {
-  constructor(world, width, height) {
+  constructor(p5, world, width, height) {
+    this.p5 = p5;
     this.world = world;
     this.width = width;
     this.height = height;
@@ -15,6 +16,7 @@ export default class Player {
     this.breakingBlockAmount = 0;
 
     this.isFalling = true;
+    this.isJumping = false;
   }
 
   breakBlock(block, deltaTime) {
@@ -27,13 +29,28 @@ export default class Player {
       this.breakingBlockAmount = 0;
       this.breakingBlock.type = BlockType.AIR;
       this.breakingBlock = null;
-    }
+    } else
+      this.breakingBlock.drawCracks(
+        this.p5,
+        this.breakingBlockAmount / this.breakingBlock.breakTime,
+      );
   }
 
   physics(deltaTime, xMoveDirection, jump) {
+    // going up, check for top collision
+    if (this.yVel < 0) {
+      this.isJumping = true;
+
+      const topCollision = this.#willCollideTop(deltaTime);
+      if (topCollision) this.#stopJump(topCollision);
+    }
+
+    if (this.isJumping) xMoveDirection *= 1.2;
+
     this.#gravity(deltaTime);
     this.#xMovement(deltaTime, xMoveDirection);
-    if (jump) this.#jump(deltaTime);
+
+    if (jump) this.#jump();
 
     this.#updatePositionByVelocity(deltaTime);
 
@@ -43,8 +60,10 @@ export default class Player {
   #gravity(deltaTime) {
     this.yVel += 0.98;
     const bottomCollision = this.#willCollideBottom(deltaTime);
-    if (bottomCollision) this.#stopGravity(bottomCollision);
-    else this.isFalling = true;
+    if (bottomCollision) {
+      this.#stopGravity(bottomCollision);
+      this.isJumping = false;
+    } else this.isFalling = true;
   }
 
   #stopGravity(bottomCollision) {
@@ -55,6 +74,9 @@ export default class Player {
 
   #xMovement(deltaTime, direction) {
     this.xVel = direction * PLAYER_MOVE_SPEED;
+
+    if (direction == 0) return;
+
     const xCollision = this.#willCollideX(direction, deltaTime);
     if (xCollision) this.#stopXMovement(xCollision, direction);
   }
@@ -63,14 +85,19 @@ export default class Player {
     this.xVel = 0;
     this.x =
       direction > 0
-        ? xCollision.xIndex - 0.01 - this.width * 0.5 // right
-        : xCollision.xIndex + 1 + 0.01 + this.width * 0.5; // left
+        ? xCollision.xIndex - 0.001 - this.width * 0.5 // right
+        : xCollision.xIndex + 1 + 0.001 + this.width * 0.5; // left
   }
 
-  #jump(deltaTime) {
+  #jump() {
     if (this.isFalling) return;
 
     this.yVel = -11.5;
+  }
+
+  #stopJump(topCollision) {
+    this.yVel = 0;
+    this.y = topCollision.yIndex + 1 + this.height + 0.001;
   }
 
   #updatePositionByVelocity(deltaTime) {
@@ -113,6 +140,23 @@ export default class Player {
         this.world.getBlockAtBlockIndex(
           this.x + this.width * 0.5,
           this.y + this.yVel * deltaTime,
+        ),
+      )
+    );
+  }
+
+  #willCollideTop(deltaTime) {
+    return (
+      Block.hasCollision(
+        this.world.getBlockAtBlockIndex(
+          this.x - this.width * 0.5,
+          this.y - this.height + this.yVel * deltaTime,
+        ),
+      ) ||
+      Block.hasCollision(
+        this.world.getBlockAtBlockIndex(
+          this.x + this.width * 0.5,
+          this.y - this.height + this.yVel * deltaTime,
         ),
       )
     );

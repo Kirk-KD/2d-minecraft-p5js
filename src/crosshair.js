@@ -1,13 +1,12 @@
 import { Block } from "./block.js";
-import { PLAYER_REACH } from "./config.js";
+import { BLOCK_SIZE, CROSSHAIR_SIZE, PLAYER_REACH } from "./config.js";
 
 export default class Crosshair {
-  constructor(world, camera, player) {
+  constructor(p5, world, camera, player) {
+    this.p5 = p5;
     this.world = world;
     this.camera = camera;
     this.player = player;
-    this.x = 0;
-    this.y = 0;
     this.lookingAtX = 0;
     this.lookingAtY = 0;
     this.lookingAtBlock = null;
@@ -49,5 +48,12 @@ export default class Crosshair {
   draw(p5) {
     if (Block.canHighlight(this.lookingAtBlock))
       this.lookingAtBlock.drawHighlight(p5);
+
+    const x = this.lookingAtX * BLOCK_SIZE;
+    const y = this.lookingAtY * BLOCK_SIZE;
+    p5.stroke(150);
+    p5.strokeWeight(2);
+    p5.line(x - CROSSHAIR_SIZE * 0.5, y, x + CROSSHAIR_SIZE * 0.5, y);
+    p5.line(x, y - CROSSHAIR_SIZE * 0.5, x, y + CROSSHAIR_SIZE * 0.5);
   }
 }

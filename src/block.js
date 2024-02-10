@@ -1,6 +1,5 @@
 import { BLOCK_SIZE, CHUNK_WIDTH, LIGHT_DISTANCE } from "./config.js";
-import { blocksTextures } from "./assets.js";
-// import getHeightAtX from "./noise.js";
+import { blocksTextures, textures } from "./assets.js";
 import Utils from "./utils.js";
 
 export const BlockType = {
@@ -49,6 +48,16 @@ export class Block {
     p5.square(this.screenX, this.screenY, BLOCK_SIZE);
   }
 
+  drawCracks(p5, percent) {
+    p5.tint(255, 230);
+    p5.image(
+      textures.cracks[Math.floor(percent * textures.cracks.length)],
+      this.screenX,
+      this.screenY,
+    );
+    p5.noTint();
+  }
+
   drawDebug(p5) {
     p5.stroke(0);
     p5.fill(255);
@@ -64,7 +73,6 @@ export class Block {
   }
 
   getShadowLevel() {
-    // const maxH = this.world.terrainGenerator.getHeight(this.globalXIndex);
     let smooth = this.columnHeight;
     const limit = 3;
     for (let i = 1; i <= limit; i++) {

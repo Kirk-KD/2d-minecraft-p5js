@@ -1,7 +1,8 @@
 import { WIDTH, HEIGHT, BLOCK_SIZE } from "./config.js";
 
 export default class Camera {
-  constructor(world) {
+  constructor(p5, world) {
+    this.p5 = p5;
     this.world = world;
     this.x = 0;
     this.y = 0;
@@ -12,7 +13,7 @@ export default class Camera {
   }
 
   calibrateDrawingPosition(p5) {
-    p5.translate(
+    this.p5.translate(
       WIDTH / 2 - this.x * BLOCK_SIZE,
       HEIGHT / 2 + this.y * BLOCK_SIZE,
     );
@@ -24,8 +25,8 @@ export default class Camera {
   }
 
   follow(p5) {
-    this.x = p5.lerp(this.x, this.targetX + this.targetXOffset, 0.3);
-    this.y = p5.lerp(this.y, this.targetY + this.targetYOffset, 0.3);
+    this.x = this.p5.lerp(this.x, this.targetX + this.targetXOffset, 0.3);
+    this.y = this.p5.lerp(this.y, this.targetY + this.targetYOffset, 0.3);
   }
 
   peek(w, s) {
@@ -37,8 +38,8 @@ export default class Camera {
 
   getBlockIndexAtMouse(p5) {
     return [
-      (p5.mouseX - WIDTH / 2) / BLOCK_SIZE + this.x,
-      (p5.mouseY - HEIGHT / 2) / BLOCK_SIZE - this.y,
+      (this.p5.mouseX - WIDTH / 2) / BLOCK_SIZE + this.x,
+      (this.p5.mouseY - HEIGHT / 2) / BLOCK_SIZE - this.y,
     ];
   }
 }

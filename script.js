@@ -7,7 +7,7 @@ import {
   HEIGHT,
   PLAYER_SPRINT_BONUS,
 } from "./src/config.js";
-import { loadBlocksTextures } from "./src/assets.js";
+import { loadTextures } from "./src/assets.js";
 import Camera from "./src/camera.js";
 import World from "./src/world.js";
 import Utils from "./src/utils.js";
@@ -21,8 +21,7 @@ let crosshair;
 
 let p5Div;
 
-let prevFrameTime = 0,
-  deltaTime = 0;
+let deltaTime = 0;
 
 let debug = false;
 
@@ -32,11 +31,11 @@ new p5((p5) => {
     setWidth(Utils.elementWidth(p5Div));
     setHeight(Utils.elementHeight(p5Div));
 
-    loadBlocksTextures(p5);
+    loadTextures(p5);
     world = new World(p5);
-    camera = new Camera(world);
-    player = new Player(world, 0.8, 1.8);
-    crosshair = new Crosshair(world, camera, player);
+    camera = new Camera(p5, world);
+    player = new Player(p5, world, 0.8, 1.8);
+    crosshair = new Crosshair(p5, world, camera, player);
   };
 
   p5.setup = () => {
@@ -45,10 +44,7 @@ new p5((p5) => {
   };
 
   p5.draw = () => {
-    let now = p5.millis() / 1000;
-    // deltaTime = now - prevFrameTime;
     deltaTime = p5.deltaTime * 0.001;
-    prevFrameTime = now;
 
     p5.push();
 
