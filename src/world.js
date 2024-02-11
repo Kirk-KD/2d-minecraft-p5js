@@ -40,7 +40,8 @@ class ChunksCollection {
 }
 
 export default class World {
-  constructor(p5) {
+  constructor(p5, lighting) {
+    this.lighting = lighting;
     this.terrainGenerator = new PerlinHeight(p5, 911);
     this.chunks = new ChunksCollection(this);
     this.chunks.newChunkAtXIndex(-2);

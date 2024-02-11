@@ -1,4 +1,4 @@
-import { PLAYER_MOVE_SPEED, BLOCK_SIZE } from "./config.js";
+import { PLAYER_MOVE_SPEED, BLOCK_SIZE, WIDTH, CHUNK_WIDTH } from "./config.js";
 import { Block, BlockType } from "./block.js";
 
 export default class Player {

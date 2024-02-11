@@ -26,17 +26,15 @@ export class Block {
 
     this.type = type || BlockType.AIR;
 
-    this.shadowLevel = this.getShadowLevel();
+    this.lightLevel = 0;
   }
 
   draw(p5) {
-    if (this.type === BlockType.AIR) return;
-
-    if (this.shadowLevel <= 0.99)
+    if (this.type !== BlockType.AIR && this.lightLevel > 0.01)
       p5.image(blocksTextures[this.type], this.screenX, this.screenY);
 
-    if (this.shadowLevel > 0.01) {
-      p5.fill(0, 0, 0, 255 * this.shadowLevel);
+    if (this.lightLevel < 0.99) {
+      p5.fill(0, 0, 0, 255 * (1 - this.lightLevel));
       p5.rect(this.screenX, this.screenY, BLOCK_SIZE, BLOCK_SIZE);
     }
   }
@@ -62,7 +60,7 @@ export class Block {
     p5.stroke(0);
     p5.fill(255);
     p5.text(
-      `${this.type} (${this.xIndex},${this.yIndex}) Shadow: ${this.shadowLevel}`,
+      `${this.type} (${this.xIndex},${this.yIndex}) Light: ${this.lightLevel}`,
       this.screenX,
       this.screenY - 10,
     );
@@ -85,6 +83,19 @@ export class Block {
     }
     smooth /= 2 * limit + 1;
     return Utils.clamp((this.yIndex - smooth) / LIGHT_DISTANCE, 0, 1);
+  }
+
+  getNeighbors() {
+    return [
+      this.world.getBlockAtBlockIndex(this.xIndex - 1, this.yIndex - 1),
+      this.world.getBlockAtBlockIndex(this.xIndex - 1, this.yIndex),
+      this.world.getBlockAtBlockIndex(this.xIndex - 1, this.yIndex + 1),
+      this.world.getBlockAtBlockIndex(this.xIndex, this.yIndex - 1),
+      this.world.getBlockAtBlockIndex(this.xIndex, this.yIndex + 1),
+      this.world.getBlockAtBlockIndex(this.xIndex + 1, this.yIndex - 1),
+      this.world.getBlockAtBlockIndex(this.xIndex + 1, this.yIndex),
+      this.world.getBlockAtBlockIndex(this.xIndex + 1, this.yIndex + 1),
+    ].filter((x) => x);
   }
 
   static canHighlight(block) {

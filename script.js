@@ -13,11 +13,13 @@ import World from "./src/world.js";
 import Utils from "./src/utils.js";
 import Player from "./src/player.js";
 import Crosshair from "./src/crosshair.js";
+import LightingCalculation from "./src/lighting.js";
 
 let camera;
 let world;
 let player;
 let crosshair;
+let lighting;
 
 let p5Div;
 
@@ -32,10 +34,11 @@ new p5((p5) => {
     setHeight(Utils.elementHeight(p5Div));
 
     loadTextures(p5);
-    world = new World(p5);
+    world = new World(p5, lighting);
     camera = new Camera(p5, world);
     player = new Player(p5, world, 0.8, 1.8);
     crosshair = new Crosshair(p5, world, camera, player);
+    lighting = new LightingCalculation(world, player);
   };
 
   p5.setup = () => {
@@ -58,6 +61,8 @@ new p5((p5) => {
     camera.followPlayer(player, deltaTime);
     camera.follow(p5);
 
+    lighting.updateLightLevels();
+
     player.draw(p5);
     world.draw(p5, camera);
     if (debug) world.drawDebugBlock(p5, camera);
@@ -73,6 +78,8 @@ new p5((p5) => {
 
   p5.keyPressed = () => {
     if (p5.keyCode === p5.TAB) {
+      lighting.updateLightLevels();
+
       debug = !debug;
       return false;
     }
