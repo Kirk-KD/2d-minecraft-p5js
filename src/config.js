@@ -3,7 +3,7 @@ export let HEIGHT = 800;
 
 export const BLOCK_SIZE = 50;
 export const CHUNK_WIDTH = 16;
-export const MAX_HEIGHT = 100;
+export const MAX_HEIGHT = 200;
 
 export const LIGHT_DISTANCE = 8;
 

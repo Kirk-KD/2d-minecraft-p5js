@@ -38,7 +38,7 @@ new p5((p5) => {
     camera = new Camera(p5, world);
     player = new Player(p5, world, 0.8, 1.8);
     crosshair = new Crosshair(p5, world, camera, player);
-    lighting = new LightingCalculation(world, player);
+    lighting = new LightingCalculation(world, player, 35);
   };
 
   p5.setup = () => {
@@ -61,7 +61,8 @@ new p5((p5) => {
     camera.followPlayer(player, deltaTime);
     camera.follow(p5);
 
-    lighting.updateLightLevels();
+    // lighting.updateLightLevels();
+    // lighting.updateSun();
 
     player.draw(p5);
     world.draw(p5, camera);
@@ -78,8 +79,6 @@ new p5((p5) => {
 
   p5.keyPressed = () => {
     if (p5.keyCode === p5.TAB) {
-      lighting.updateLightLevels();
-
       debug = !debug;
       return false;
     }
