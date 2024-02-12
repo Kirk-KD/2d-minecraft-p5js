@@ -7,6 +7,7 @@ export const BlockType = {
   DIRT: "dirt",
   GRASS: "grass",
   WOOD: "wood",
+  LEAVES: "leaves",
 };
 
 export class Block {

@@ -134,7 +134,7 @@ export default class LightingCalculation {
 
   #diffuseLightFactor(recipient, neighbor) {
     return (
-      (neighbor.type === BlockType.AIR ? 0.8 : 0.5) -
+      (neighbor.type === BlockType.AIR ? 0.9 : 0.5) -
       (recipient.xIndex !== neighbor.xIndex &&
       recipient.yIndex !== neighbor.yIndex
         ? 0.41

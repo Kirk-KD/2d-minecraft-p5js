@@ -1,5 +1,5 @@
 import Chunk from "./chunk.js";
-import PerlinGeneration from "./noise.js";
+import { PerlinGeneration } from "./generation.js";
 import { BLOCK_SIZE, CHUNK_WIDTH, WIDTH } from "./config.js";
 
 class ChunksCollection {

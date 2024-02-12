@@ -36,4 +36,8 @@ export default class Utils {
   static randRange(a, b) {
     return Math.random() * (b - a) + a;
   }
+
+  static randChoice(array) {
+    return array[Math.floor(Math.random() * array.length)];
+  }
 }

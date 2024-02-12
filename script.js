@@ -53,7 +53,7 @@ new p5((p5) => {
 
     p5.noStroke();
     p5.noSmooth();
-    p5.background(230);
+    p5.background(163, 235, 255);
 
     keyboardInput(p5);
 
