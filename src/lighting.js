@@ -1,5 +1,12 @@
 import { Block, BlockType } from "./block.js";
-import { CHUNK_WIDTH, HEIGHT, MAX_HEIGHT, BLOCK_SIZE } from "./config.js";
+import {
+  CHUNK_WIDTH,
+  HEIGHT,
+  MAX_HEIGHT,
+  BLOCK_SIZE,
+  MAX_SKY_LIGHT,
+  MIN_SKY_LIGHT,
+} from "./config.js";
 
 export default class LightingCalculation {
   constructor(world, player, sunDegrees) {
@@ -7,7 +14,7 @@ export default class LightingCalculation {
     this.player = player;
     this.sunDegrees = sunDegrees;
 
-    this.sunLastUpdated = 0;
+    this.skyLightLevel = MAX_SKY_LIGHT;
   }
 
   #getSunSlope() {
@@ -18,7 +25,7 @@ export default class LightingCalculation {
 
   #traceSkyLight(startX, slope) {
     const maxY = Math.min(
-      Math.ceil(this.player.y + (2 * HEIGHT) / BLOCK_SIZE),
+      Math.ceil(this.player.y + HEIGHT / BLOCK_SIZE),
       MAX_HEIGHT,
     );
     const minY = Math.max(
@@ -45,10 +52,10 @@ export default class LightingCalculation {
       }
     }
 
-    let x = xOffset + startX + 0.1;
-    let y = 0.1;
+    let x = xOffset + startX;
+    let y = 0;
 
-    let light = 1;
+    let light = this.skyLightLevel;
     let shadedBlocks = [];
     while (y < maxY) {
       const block = this.world.getBlockAtBlockIndex(x, y);
@@ -143,8 +150,8 @@ export default class LightingCalculation {
     let shadedBlocks = [];
 
     for (
-      let i = (start - 1) * CHUNK_WIDTH + 0.5;
-      i < (stop + 1) * CHUNK_WIDTH;
+      let i = start * CHUNK_WIDTH;
+      i < (stop + 1) * CHUNK_WIDTH + CHUNK_WIDTH;
       i += 0.5
     ) {
       shadedBlocks = shadedBlocks.concat(this.#traceSkyLight(i, slope));
@@ -153,11 +160,12 @@ export default class LightingCalculation {
     this.#fillLight(shadedBlocks, [], shadedBlocks[0]);
   }
 
-  updateSun() {
-    if (Date.now() - this.sunLastUpdated >= 20000) {
-      this.sunLastUpdated = Date.now();
-      this.sunDegrees += 5;
-      this.sunDegrees %= 360;
-    }
+  updateSun(millis) {
+    const f = 0.000001;
+    const a = MIN_SKY_LIGHT;
+    const b = MAX_SKY_LIGHT;
+    this.skyLightLevel =
+      ((b - a) / 2) * Math.sin((2 * Math.PI * f * millis) / (b - a)) +
+      (a + b) / 2;
   }
 }

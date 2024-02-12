@@ -1,5 +1,5 @@
 import Chunk from "./chunk.js";
-import PerlinHeight from "./noise.js";
+import PerlinGeneration from "./noise.js";
 import { BLOCK_SIZE, CHUNK_WIDTH, WIDTH } from "./config.js";
 
 class ChunksCollection {
@@ -17,11 +17,11 @@ class ChunksCollection {
     this.#getCollection(xIndex)[this.#getIndex(xIndex)] = chunk;
   }
 
-  newChunkAtXIndex(xIndex) {
-    this.#getCollection(xIndex)[this.#getIndex(xIndex)] = new Chunk(
-      this.world,
-      xIndex,
-    );
+  newChunkAtXIndex(xIndex, isSpawnChunk) {
+    const chunk = new Chunk(this.world, xIndex);
+    this.#getCollection(xIndex)[this.#getIndex(xIndex)] = chunk;
+
+    if (!isSpawnChunk) chunk.generateTrees();
   }
 
   forEach(predicate) {
@@ -42,13 +42,11 @@ class ChunksCollection {
 export default class World {
   constructor(p5, lighting) {
     this.lighting = lighting;
-    this.terrainGenerator = new PerlinHeight(p5, 911);
+    this.terrainGenerator = new PerlinGeneration(p5);
     this.chunks = new ChunksCollection(this);
-    this.chunks.newChunkAtXIndex(-2);
-    this.chunks.newChunkAtXIndex(-1);
-    this.chunks.newChunkAtXIndex(0);
-    this.chunks.newChunkAtXIndex(1);
-    this.chunks.newChunkAtXIndex(2);
+
+    for (let i = -2; i <= 2; i++) this.chunks.newChunkAtXIndex(i, true);
+    for (let i = -2; i <= 2; i++) this.chunks.getAtXIndex(i).generateTrees();
   }
 
   draw(p5, camera) {

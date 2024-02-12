@@ -26,14 +26,18 @@ export default class Player {
     }
     this.breakingBlockAmount += deltaTime;
     if (this.breakingBlockAmount >= this.breakingBlock.breakTime) {
-      this.breakingBlockAmount = 0;
-      this.breakingBlock.type = BlockType.AIR;
-      this.breakingBlock = null;
+      this.#onBlockBroken();
     } else
       this.breakingBlock.drawCracks(
         this.p5,
         this.breakingBlockAmount / this.breakingBlock.breakTime,
       );
+  }
+
+  #onBlockBroken() {
+    this.breakingBlockAmount = 0;
+    this.breakingBlock.type = BlockType.AIR;
+    this.breakingBlock = null;
   }
 
   physics(deltaTime, xMoveDirection, jump) {
@@ -58,7 +62,7 @@ export default class Player {
   }
 
   #gravity(deltaTime) {
-    this.yVel += 0.98;
+    this.yVel += 60 * deltaTime;
     const bottomCollision = this.#willCollideBottom(deltaTime);
     if (bottomCollision) {
       this.#stopGravity(bottomCollision);
@@ -92,7 +96,7 @@ export default class Player {
   #jump() {
     if (this.isFalling) return;
 
-    this.yVel = -11.5;
+    this.yVel = -12;
   }
 
   #stopJump(topCollision) {
