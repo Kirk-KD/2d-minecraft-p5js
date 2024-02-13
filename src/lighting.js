@@ -1,4 +1,5 @@
 import { Block, BlockType } from "./block.js";
+import Utils from "./utils.js";
 import {
   CHUNK_WIDTH,
   HEIGHT,
@@ -25,7 +26,7 @@ export default class LightingCalculation {
 
   #traceSkyLight(startX, slope) {
     const maxY = Math.min(
-      Math.ceil(this.player.y + HEIGHT / BLOCK_SIZE),
+      Math.ceil(this.player.y + (1.5 * HEIGHT) / BLOCK_SIZE),
       MAX_HEIGHT,
     );
     const minY = Math.max(
@@ -63,9 +64,9 @@ export default class LightingCalculation {
       if (block) {
         block.lightLevel = light;
         if (y > minY && light === 0) shadedBlocks.push(block);
+        if (!block.isBackground)
+          light = Utils.clamp(light - block.opacity, 0, 1);
       }
-
-      if (Block.hasCollision(block)) light = 0;
 
       x += dx;
       y += dy;
@@ -73,37 +74,6 @@ export default class LightingCalculation {
 
     return shadedBlocks;
   }
-
-  // #fillLight(shadedBlocks) {
-  //   let determined = [];
-  //   let stack = [shadedBlocks[0]];
-  //   let block;
-
-  //   while (stack.length > 0) {
-  //     block = stack[stack.length - 1];
-
-  //     if (determined.includes(block)) {
-  //       stack.pop();
-  //       continue;
-  //     }
-
-  //     const neighbors = block.getNeighbors();
-  //     let completedNeighbors = 0;
-  //     neighbors.forEach((neighbor) => {
-  //       if (!shadedBlocks.includes(neighbor) || determined.includes(neighbor)) {
-  //         // neighbor calculated
-  //         block.lightLevel = Math.max(
-  //           block.lightLevel,
-  //           neighbor.lightLevel * this.#diffuseLightFactor(block, neighbor),
-  //         );
-  //         completedNeighbors++;
-  //       } else if (!stack.includes(neighbor)) stack.push(neighbor); // neighbor needs to be calculated
-  //     });
-  //     if (completedNeighbors === neighbors.length) {
-  //       determined.push(block);
-  //     }
-  //   }
-  // }
 
   #fillLight(shadedBlocks, visited, block) {
     if (!block) return;
@@ -146,7 +116,9 @@ export default class LightingCalculation {
     if (this.sunDegrees <= 0 || this.sunDegrees >= 180) return;
 
     const slope = this.#getSunSlope();
-    const [start, stop] = this.world.getChunkGenerationRange(this.player.x);
+    const [start, stop] = this.world.getChunkGenerationRange(
+      Math.floor(this.player.x),
+    );
     let shadedBlocks = [];
 
     for (

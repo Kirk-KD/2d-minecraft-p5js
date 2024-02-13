@@ -1,4 +1,4 @@
-import { BlockType } from "./block.js";
+import { blocks } from "./block.js";
 
 export class PerlinGeneration {
   constructor(p5, seed) {
@@ -39,12 +39,13 @@ class TreeStructure {
       const offsetY = this.structure.length - y - 1;
       for (let x = 0; x < this.structure[y].length; x++) {
         if (!this.structure[y][x]) continue;
-        
+
         const offsetX = this.centerX - x;
         chunk.setBlock(
           baseLocalX - offsetX,
           baseY - offsetY,
-          this.structure[y][x]
+          this.structure[y][x],
+          true,
         );
       }
     }
@@ -53,39 +54,45 @@ class TreeStructure {
 
 export const TREE_STRUCTURES = {
   oak: [
-    new TreeStructure([
-      " ### ",
-      "#####",
-      "##H##",
-      "  H  ",
-      "  H  "
-    ], {
-      "#": BlockType.LEAVES,
-      "H": BlockType.WOOD
-    }, 2),
-    new TreeStructure([
-      " ##### ",
-      " ##### ",
-      "###H###",
-      "###H###",
-      "   H   ",
-      "   H   ",
-      "   H   "
-    ], {
-      "#": BlockType.LEAVES,
-      "H": BlockType.WOOD
-    }, 2),
-    new TreeStructure([
-      " ##### ",
-      "#######",
-      "###H###",
-      " ##H## ",
-      "   H   ",
-      "   H   ",
-      "   H   "
-    ], {
-      "#": BlockType.LEAVES,
-      "H": BlockType.WOOD
-    }, 2)
+    new TreeStructure(
+      [" ### ", "#####", "##H##", "  H  ", "  H  "],
+      {
+        "#": blocks.LeavesBlock,
+        H: blocks.WoodBlock,
+      },
+      2,
+    ),
+    new TreeStructure(
+      [
+        " ##### ",
+        " ##### ",
+        "###H###",
+        "###H###",
+        "   H   ",
+        "   H   ",
+        "   H   ",
+      ],
+      {
+        "#": blocks.LeavesBlock,
+        H: blocks.WoodBlock,
+      },
+      2,
+    ),
+    new TreeStructure(
+      [
+        " ##### ",
+        "#######",
+        "###H###",
+        " ##H## ",
+        "   H   ",
+        "   H   ",
+        "   H   ",
+      ],
+      {
+        "#": blocks.LeavesBlock,
+        H: blocks.WoodBlock,
+      },
+      2,
+    ),
   ],
 };

@@ -64,8 +64,8 @@ new p5((p5) => {
     lighting.updateLightLevels();
     lighting.updateSun(p5.millis());
 
-    player.draw(p5);
     world.draw(p5, camera);
+    player.draw(p5);
     if (debug) world.drawDebugBlock(p5, camera);
 
     crosshair.update(p5, deltaTime);

@@ -1,5 +1,5 @@
 import { PLAYER_MOVE_SPEED, BLOCK_SIZE, WIDTH, CHUNK_WIDTH } from "./config.js";
-import { Block, BlockType } from "./block.js";
+import { Block, BlockType, blocks } from "./block.js";
 
 export default class Player {
   constructor(p5, world, width, height) {
@@ -36,7 +36,9 @@ export default class Player {
 
   #onBlockBroken() {
     this.breakingBlockAmount = 0;
-    this.breakingBlock.type = BlockType.AIR;
+    // this.breakingBlock.type = BlockType.AIR;
+    // this.breakingBlock.isBackground = false;
+    this.breakingBlock.replace(blocks.AirBlock);
     this.breakingBlock = null;
   }
 

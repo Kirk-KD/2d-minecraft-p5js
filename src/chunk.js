@@ -5,7 +5,7 @@ import {
   HEIGHT,
   BLOCK_SIZE,
 } from "./config.js";
-import { Block, BlockType } from "./block.js";
+import { blocks, BlockType } from "./block.js";
 import { TREE_STRUCTURES } from "./generation.js";
 import Utils from "./utils.js";
 
@@ -28,30 +28,51 @@ export default class Chunk {
       );
 
       for (let y = 0; y < MAX_HEIGHT; y++) {
-        if (y > maxY) this.setBlock(x, y, BlockType.DIRT);
-        else if (y == maxY) this.setBlock(x, y, BlockType.GRASS);
-        else this.setBlock(x, y, BlockType.AIR);
+        if (y > maxY) this.setBlock(x, y, blocks.DirtBlock);
+        else if (y == maxY) this.setBlock(x, y, blocks.GrassBlock);
+        else this.setBlock(x, y, blocks.AirBlock);
       }
     }
   }
 
-  setBlock(localX, y, type) {
+  replaceBlock(localX, y, blockClass, isBackground) {
+    const original = this.world.getBlockAtBlockIndex(
+      this.xIndex * CHUNK_WIDTH + localX,
+      y,
+    );
+    this.setBlock(
+      localX,
+      y,
+      new blockClass(
+        this.world,
+        original.columnHeight,
+        original.chunkXIndex,
+        original.localXIndex,
+        original.yIndex,
+        isBackground,
+      ),
+    );
+  }
+
+  setBlock(localX, y, blockClass, isBackground) {
     if (localX < 0) {
       const chunkLeft = this.world.chunks.getAtXIndex(this.xIndex - 1);
-      if (chunkLeft) chunkLeft.setBlock(CHUNK_WIDTH + localX, y, type);
+      if (chunkLeft)
+        chunkLeft.setBlock(CHUNK_WIDTH + localX, y, blockClass, isBackground);
     } else if (localX >= CHUNK_WIDTH) {
       const chunkRight = this.world.chunks.getAtXIndex(this.xIndex + 1);
-      if (chunkRight) chunkRight.setBlock(localX - CHUNK_WIDTH, y, type);
+      if (chunkRight)
+        chunkRight.setBlock(localX - CHUNK_WIDTH, y, blockClass, isBackground);
     } else {
-      this.blocks[localX][y] = new Block(
+      this.blocks[localX][y] = new blockClass(
         this.world,
         this.world.terrainGenerator.getHeight(
           localX + this.xIndex * CHUNK_WIDTH,
         ),
-        this.xIndex,
+        this,
         localX,
         y,
-        type,
+        isBackground,
       );
     }
   }
