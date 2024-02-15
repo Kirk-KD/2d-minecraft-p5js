@@ -119,7 +119,7 @@ export class Block {
      *   create shadows but does get affected by light).
      * @type {boolean}
      */
-    this.isBackground = isBackground | false;
+    this.isBackground = isBackground || false;
   }
 
   /**

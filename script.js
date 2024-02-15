@@ -7,13 +7,14 @@ import {
   HEIGHT,
   PLAYER_SPRINT_BONUS,
 } from "./src/config.js";
-import { loadTextures } from "./src/assets.js";
+import { loadTextures, loadFonts } from "./src/assets.js";
 import Camera from "./src/camera.js";
 import World from "./src/world.js";
 import Utils from "./src/utils.js";
 import Player from "./src/player.js";
 import Crosshair from "./src/crosshair.js";
 import LightingCalculation from "./src/lighting.js";
+import { loadItems } from "./src/inventory/item.js";
 
 let camera;
 let world;
@@ -27,18 +28,26 @@ let deltaTime = 0;
 
 let debug = false;
 
+let finishedLoading = false;
+
 new p5((p5) => {
   p5.preload = () => {
     p5Div = document.getElementById("p5-div");
     setWidth(Utils.elementWidth(p5Div));
     setHeight(Utils.elementHeight(p5Div));
 
-    loadTextures(p5);
-    world = new World(p5, lighting);
-    camera = new Camera(p5, world);
-    player = new Player(p5, world, 0.8, 1.8);
-    crosshair = new Crosshair(p5, world, camera, player);
-    lighting = new LightingCalculation(world, player, 45);
+    loadTextures(p5).then(() => {
+      loadFonts(p5);
+      loadItems();
+
+      world = new World(p5, lighting);
+      camera = new Camera(p5, world);
+      player = new Player(p5, world, 0.8, 1.8);
+      crosshair = new Crosshair(p5, world, camera, player);
+      lighting = new LightingCalculation(world, player, 45);
+
+      finishedLoading = true;
+    });
   };
 
   p5.setup = () => {
@@ -47,6 +56,8 @@ new p5((p5) => {
   };
 
   p5.draw = () => {
+    if (!finishedLoading) return;
+
     deltaTime = p5.deltaTime * 0.001;
 
     p5.push();
@@ -73,15 +84,27 @@ new p5((p5) => {
 
     p5.pop();
 
+    player.drawActiveInventory(p5);
+
     p5.stroke(0);
     p5.text(p5.frameRate(), 10, 10);
   };
 
   p5.keyPressed = () => {
+    if (!finishedLoading) return;
+
     if (p5.keyCode === p5.TAB) {
       debug = !debug;
       return false;
     }
+    if (p5.key === "e") {
+      player.toggleInventoryGUI();
+    }
+  };
+
+  p5.mouseWheel = (event) => {
+    const dir = event.delta < 0 ? -1 : 1;
+    player.inventory.scrollSelectedHotbarSlot(dir);
   };
 });
 

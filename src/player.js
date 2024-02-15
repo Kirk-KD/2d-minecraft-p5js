@@ -1,5 +1,7 @@
-import { PLAYER_MOVE_SPEED, BLOCK_SIZE, WIDTH, CHUNK_WIDTH } from "./config.js";
-import { Block, BlockType, blocks } from "./block.js";
+import { PLAYER_MOVE_SPEED, BLOCK_SIZE } from "./config.js";
+import { Block, blocks } from "./block.js";
+import { PlayerInventory } from "./inventory/inventory.js";
+import { items } from "./inventory/item.js";
 
 export default class Player {
   constructor(p5, world, width, height) {
@@ -17,6 +19,9 @@ export default class Player {
 
     this.isFalling = true;
     this.isJumping = false;
+
+    this.inventory = new PlayerInventory(this);
+    this.activeInventory = null;
   }
 
   breakBlock(block, deltaTime) {
@@ -35,6 +40,8 @@ export default class Player {
   }
 
   #onBlockBroken() {
+    this.inventory.addItem({ item: items.Dirt, amount: 1 });
+
     this.breakingBlockAmount = 0;
     // this.breakingBlock.type = BlockType.AIR;
     // this.breakingBlock.isBackground = false;
@@ -168,6 +175,11 @@ export default class Player {
     );
   }
 
+  toggleInventoryGUI() {
+    if (this.activeInventory) this.activeInventory = null;
+    else this.activeInventory = this.inventory;
+  }
+
   draw(p5) {
     p5.stroke(0, 0, 255);
     p5.rect(
@@ -177,6 +189,12 @@ export default class Player {
       BLOCK_SIZE * this.height,
     );
     p5.noStroke();
+  }
+
+  drawActiveInventory(p5) {
+    if (this.activeInventory) this.activeInventory.draw(p5);
+
+    this.inventory.drawHotbar(p5);
   }
 
   getEyePosition() {

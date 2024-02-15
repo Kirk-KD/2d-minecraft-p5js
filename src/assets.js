@@ -23,39 +23,62 @@ export let blocksTextures = {};
 export let textures = {
   cracks: [],
 };
+export let fonts = {
+  minecraft: null,
+  minecraftItalic: null,
+  minecraftBold: null,
+  minecraftBoldItalic: null,
+};
 
 export function loadTextures(p5) {
+  let promises = [];
+
   Object.values(BlockType).forEach((name) => {
     if (name === "air") return;
-    loadTexture(p5, encodedImages[name], (img) => {
-      blocksTextures[name] = img;
-    });
+    promises.push(
+      loadTexture(p5, encodedImages[name]).then((img) => {
+        blocksTextures[name] = img;
+      }),
+    );
   });
 
   encodedImages.cracks.forEach((data) => {
-    loadTexture(p5, data, (img) => {
-      textures.cracks.push(img);
-    });
+    promises.push(
+      loadTexture(p5, data).then((img) => {
+        textures.cracks.push(img);
+      }),
+    );
+  });
+
+  return Promise.all(promises);
+}
+
+function loadTexture(p5, data) {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = BLOCK_SIZE;
+    canvas.height = BLOCK_SIZE;
+
+    let img = new Image();
+    img.src = data;
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, BLOCK_SIZE, BLOCK_SIZE);
+      resolve(
+        p5.loadImage(
+          canvas.toDataURL(),
+          () => {},
+          (err) => p5.print(err),
+        ),
+      );
+    };
   });
 }
 
-function loadTexture(p5, data, callback) {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = BLOCK_SIZE;
-  canvas.height = BLOCK_SIZE;
-
-  let img = new Image();
-  img.src = data;
-  img.onload = () => {
-    ctx.drawImage(img, 0, 0, BLOCK_SIZE, BLOCK_SIZE);
-    callback(
-      p5.loadImage(
-        canvas.toDataURL(),
-        () => {},
-        (err) => p5.print(err),
-      ),
-    );
-  };
+export function loadFonts(p5) {
+  fonts.minecraft = p5.loadFont("./fonts/minecraft.otf");
+  fonts.minecraftItalic = p5.loadFont("../fonts/minecraft_italic.otf");
+  fonts.minecraftBold = p5.loadFont("../fonts/minecraft_bold.otf");
+  fonts.minecraftBoldItalic = p5.loadFont("../fonts/minecraft_bold_italic.otf");
 }
