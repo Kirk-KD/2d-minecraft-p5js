@@ -40,11 +40,13 @@ export default class Player {
   }
 
   #onBlockBroken() {
-    this.inventory.addItem({ item: items.Dirt, amount: 1 });
+    const drops = this.breakingBlock.getDrops();
+    drops.forEach(stack => {
+      if (stack.amount < 1) return;
+      this.inventory.addItem({itemStack: stack});
+    });
 
     this.breakingBlockAmount = 0;
-    // this.breakingBlock.type = BlockType.AIR;
-    // this.breakingBlock.isBackground = false;
     this.breakingBlock.replace(blocks.AirBlock);
     this.breakingBlock = null;
   }

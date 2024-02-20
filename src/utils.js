@@ -40,4 +40,8 @@ export default class Utils {
   static randChoice(array) {
     return array[Math.floor(Math.random() * array.length)];
   }
+
+  static chance(percent) {
+    return Math.random() <= percent;
+  }
 }

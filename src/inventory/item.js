@@ -64,7 +64,7 @@ export class ItemStack {
 }
 
 /**
- * @type {Object<string, BlockItem>}
+ * @type {Object<string, Item>}
  */
 export let items;
 

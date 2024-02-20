@@ -80,6 +80,8 @@ class Inventory {
             ItemStack.MAX_STACK_SIZE,
           );
           if (slot.amount + itemStack.amount > ItemStack.MAX_STACK_SIZE) {
+            // @TODO fix
+            console.log("adsf ", slot.amount, itemStack.amount);
             return this.addItem({
               itemStack: new ItemStack(
                 itemStack.item,
@@ -163,7 +165,11 @@ class Inventory {
       p5.fill(255, 255, 255);
       p5.strokeWeight(3);
       p5.stroke(0, 0, 0);
-      p5.text(slot.amount.toString(), x + slotSize / 2 - 2, y + slotSize / 2 - 2);
+      p5.text(
+        slot.amount.toString(),
+        x + slotSize / 2 - 2,
+        y + slotSize / 2 - 2,
+      );
     }
   }
 
@@ -301,7 +307,7 @@ export class PlayerInventory extends Inventory {
     p5.rectMode(p5.CENTER);
     p5.imageMode(p5.CENTER);
     p5.textAlign(p5.RIGHT, p5.BOTTOM);
-    
+
     const y = HEIGHT - HOTBAR_BOTTOM - HOTBAR_SLOT_SIZE / 2;
     let x =
       CENTER_X - (this.columns / 2) * HOTBAR_SLOT_SIZE + HOTBAR_SLOT_SIZE / 2;
@@ -323,10 +329,15 @@ export class PlayerInventory extends Inventory {
       );
     }
 
-    p5.noFill()
+    p5.noFill();
     p5.stroke(255, 255, 255);
     p5.strokeWeight(3);
-    p5.rect(x + this.selectedHotbarSlot * HOTBAR_SLOT_SIZE, y, HOTBAR_SLOT_SIZE + 2, HOTBAR_SLOT_SIZE + 2)
+    p5.rect(
+      x + this.selectedHotbarSlot * HOTBAR_SLOT_SIZE,
+      y,
+      HOTBAR_SLOT_SIZE + 2,
+      HOTBAR_SLOT_SIZE + 2,
+    );
 
     p5.pop();
   }

@@ -1,5 +1,7 @@
 import { BLOCK_SIZE, CHUNK_WIDTH } from "./config.js";
 import { blocksTextures, textures } from "./assets.js";
+import { ItemStack, items } from "./inventory/item.js";
+import Utils from "./utils.js";
 
 /**
  * @typedef {import("./world.js").default} World
@@ -211,6 +213,14 @@ export class Block {
   }
 
   /**
+   * Method to be implemented that returns the Items dropped when broken.
+   * @return {ItemStack[]} All the ItemStacks dropped.
+   */
+  getDrops() {
+    return [];
+  }
+
+  /**
    * Determines if the block is able to be highlighted.
    * @param {Block} block
    * @return {boolean} whether or not the block is defined and is not Air.
@@ -277,6 +287,10 @@ export const blocks = {
       this.opacity = 1;
       this.breakTime = 0.75;
     }
+
+    getDrops() {
+      return [new ItemStack(items.Dirt, 1)];
+    }
   },
 
   GrassBlock: class extends Block {
@@ -292,6 +306,10 @@ export const blocks = {
       );
       this.opacity = 1;
       this.breakTime = 0.9;
+    }
+
+    getDrops() {
+      return [new ItemStack(items.Dirt, 1)];
     }
   },
 
@@ -309,6 +327,10 @@ export const blocks = {
       this.opacity = 1;
       this.breakTime = 3;
     }
+
+    getDrops() {
+      return [new ItemStack(items.Wood, 1)];
+    }
   },
 
   LeavesBlock: class extends Block {
@@ -324,6 +346,10 @@ export const blocks = {
       );
       this.opacity = 0.05;
       this.breakTime = 0.3;
+    }
+
+    getDrops() {
+      return [new ItemStack(items.Wood, Utils.chance(0.1) ? 1 : 0)];
     }
   },
 };
