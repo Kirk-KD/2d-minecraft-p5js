@@ -44,6 +44,12 @@ class Inventory {
     this.slots = new Array(this.rows)
       .fill(null)
       .map(() => new Array(this.columns).fill(null));
+
+    /**
+     * Stores the ItemStack possibly held when the player grabs an item.
+     * @type {ItemStack?}
+     */
+    this.cursorHeldItemStack = null;
   }
 
   /**
@@ -72,24 +78,14 @@ class Inventory {
       for (let col = 0; col < this.columns; col++) {
         const slot = this.getAt(row, col);
 
-        if (slot === null) continue;
-
-        if (slot.item == itemStack.item) {
-          slot.amount = Math.min(
-            slot.amount + itemStack.amount,
-            ItemStack.MAX_STACK_SIZE,
-          );
+        if (slot && slot.item == itemStack.item) {
           if (slot.amount + itemStack.amount > ItemStack.MAX_STACK_SIZE) {
-            // @TODO fix
-            console.log("adsf ", slot.amount, itemStack.amount);
-            return this.addItem({
-              itemStack: new ItemStack(
-                itemStack.item,
-                ItemStack.MAX_STACK_SIZE - (slot.amount + itemStack.amount),
-              ),
-            });
+            itemStack.amount -= ItemStack.MAX_STACK_SIZE - slot.amount;
+            slot.amount = ItemStack.MAX_STACK_SIZE;
+          } else {
+            slot.amount += itemStack.amount;
+            return false;
           }
-          return false;
         }
       }
     }
@@ -99,8 +95,13 @@ class Inventory {
         const slot = this.getAt(row, col);
 
         if (slot === null) {
-          this.#setItemStack(itemStack, row, col);
-          return false;
+          if (itemStack.amount > ItemStack.MAX_STACK_SIZE) {
+            this.#setItemStack(new ItemStack(itemStack.item, ItemStack.MAX_STACK_SIZE), row, col);
+            itemStack.amount -= ItemStack.MAX_STACK_SIZE;
+          } else {
+            this.#setItemStack(itemStack, row, col);
+            return false;
+          }
         }
       }
     }
