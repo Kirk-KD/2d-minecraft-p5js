@@ -61,6 +61,14 @@ export class ItemStack {
      */
     this.amount = amount;
   }
+
+  /**
+   * Makes a copy of this ItemStack.
+   * @return {ItemStack}
+   */
+  copy() {
+    return new ItemStack(this.item, this.amount);
+  }
 }
 
 /**

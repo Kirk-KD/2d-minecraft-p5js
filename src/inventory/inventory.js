@@ -3,6 +3,7 @@
 import {
   INVENTORY_SLOT_SIZE,
   INVENTORY_SLOT_ITEM_SIZE,
+  INVENTORY_SLOT_NET_SIZE,
   INVENTORY_PADDING,
   INVENTORY_MARGIN,
   HOTBAR_BOTTOM,
@@ -28,8 +29,9 @@ class Inventory {
   /**
    * @param {number} rows
    * @param {number} columns
+   * @param {string} name
    */
-  constructor(rows, columns) {
+  constructor(rows, columns, name) {
     /**
      * @type {number}
      */
@@ -39,17 +41,19 @@ class Inventory {
      */
     this.columns = columns;
     /**
+     * @type {string}
+     */
+    this.name = name || "Inventory";
+    /**
      * @type {Array<Array<ItemStack?>>}
      */
     this.slots = new Array(this.rows)
       .fill(null)
       .map(() => new Array(this.columns).fill(null));
 
-    /**
-     * Stores the ItemStack possibly held when the player grabs an item.
-     * @type {ItemStack?}
-     */
-    this.cursorHeldItemStack = null;
+    this.slotPositions = new Array(this.rows)
+      .fill(null)
+      .map(() => new Array(this.columns).fill(null));
   }
 
   /**
@@ -96,10 +100,14 @@ class Inventory {
 
         if (slot === null) {
           if (itemStack.amount > ItemStack.MAX_STACK_SIZE) {
-            this.#setItemStack(new ItemStack(itemStack.item, ItemStack.MAX_STACK_SIZE), row, col);
+            this.setItemStack(
+              new ItemStack(itemStack.item, ItemStack.MAX_STACK_SIZE),
+              row,
+              col,
+            );
             itemStack.amount -= ItemStack.MAX_STACK_SIZE;
           } else {
-            this.#setItemStack(itemStack, row, col);
+            this.setItemStack(itemStack, row, col);
             return false;
           }
         }
@@ -107,6 +115,25 @@ class Inventory {
     }
 
     return true;
+  }
+
+  /**
+   * Draws this inventory where the top left slot is at x,y.
+   * @param {p5} p5
+   * @param {number} topLeftX
+   * @param {number} topLeftY
+   */
+  draw(p5, topLeftX, topLeftY) {
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.columns; col++)
+        this.drawSlot(
+          p5,
+          row,
+          col,
+          topLeftX + col * INVENTORY_SLOT_NET_SIZE,
+          topLeftY + row * INVENTORY_SLOT_NET_SIZE,
+        );
+    }
   }
 
   /**
@@ -150,7 +177,11 @@ class Inventory {
     strokeWeight,
     cornerRounding,
     textSize,
+    isHotBar,
   ) {
+    if (!isHotBar)
+      this.slotPositions[row][col] = [x - slotSize / 2, y - slotSize / 2];
+
     p5.stroke(...strokeColor);
     p5.strokeWeight(strokeWeight);
     p5.fill(...fillColor);
@@ -176,12 +207,34 @@ class Inventory {
 
   /**
    * Sets the slot to an ItemStack.
-   * @param {ItemStack} itemStack
+   * @param {ItemStack?} itemStack
    * @param {number} row
    * @param {number} col
    */
-  #setItemStack(itemStack, row, col) {
+  setItemStack(itemStack, row, col) {
     this.slots[row][col] = itemStack;
+  }
+
+  /**
+   * Converts mouse location to slot index.
+   * @param {number} x
+   * @param {number} y
+   * @return {[number, number]} the slot index.
+   */
+  mouseToSlotIndex(x, y) {
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.columns; col++) {
+        const [xx, yy] = this.slotPositions[row][col];
+        if (
+          x - xx >= 0 &&
+          x - xx <= INVENTORY_SLOT_SIZE &&
+          y - yy >= 0 &&
+          y - yy <= INVENTORY_SLOT_SIZE
+        )
+          return [row, col];
+      }
+    }
+    return null;
   }
 }
 
@@ -193,7 +246,7 @@ export class PlayerInventory extends Inventory {
    * @param {Player} player
    */
   constructor(player) {
-    super(4, 9);
+    super(4, 9, "Player Inventory");
 
     /**
      * @type {Player}
@@ -208,6 +261,16 @@ export class PlayerInventory extends Inventory {
      * @type {[ItemStack?, ItemStack?, ItemStack?, ItemStack?]}
      */
     this.armorSlots = [null, null, null, null];
+
+    /**
+     * @type {Inventory?}
+     */
+    this.viewingInventory = new Inventory(3, 9, "Chest");
+
+    /**
+     * @type {ItemStack?}
+     */
+    this.cursorHeldItemStack = null;
   }
 
   /**
@@ -242,15 +305,19 @@ export class PlayerInventory extends Inventory {
       this.columns * INVENTORY_SLOT_SIZE +
       (this.columns - 1) * INVENTORY_PADDING +
       2 * INVENTORY_MARGIN;
-    const mainHeight =
+
+    const playerInvHeight =
       this.rows * INVENTORY_SLOT_SIZE +
       (this.rows - 2) * INVENTORY_PADDING +
       INVENTORY_MARGIN;
-    const invHeight =
-      mainHeight +
-      3 * INVENTORY_MARGIN +
-      4 * INVENTORY_SLOT_SIZE +
-      3 * INVENTORY_PADDING;
+
+    const topHeight = this.viewingInventory
+      ? this.viewingInventory.rows * INVENTORY_SLOT_SIZE +
+        (this.viewingInventory.rows - 1) * INVENTORY_PADDING +
+        3 * INVENTORY_MARGIN
+      : 3 * INVENTORY_MARGIN + 4 * INVENTORY_SLOT_SIZE + 3 * INVENTORY_PADDING;
+
+    const invHeight = INVENTORY_MARGIN + playerInvHeight + topHeight;
 
     p5.stroke(235, 235, 235);
     p5.strokeWeight(2);
@@ -261,20 +328,18 @@ export class PlayerInventory extends Inventory {
     const top = HEIGHT / 2 - invHeight / 2;
 
     const invSlotTop =
-      top + invHeight - mainHeight - INVENTORY_MARGIN + INVENTORY_SLOT_SIZE / 2;
+      top +
+      invHeight -
+      playerInvHeight -
+      INVENTORY_MARGIN +
+      INVENTORY_SLOT_SIZE / 2;
     const invSlotLeft = left + INVENTORY_SLOT_SIZE / 2;
 
     for (let row = 1; row < this.rows; row++) {
       for (let col = 0; col < this.columns; col++) {
         const x =
-          INVENTORY_MARGIN +
-          invSlotLeft +
-          INVENTORY_SLOT_SIZE * col +
-          INVENTORY_PADDING * col;
-        const y =
-          invSlotTop +
-          INVENTORY_SLOT_SIZE * (row - 1) +
-          INVENTORY_PADDING * (row - 1);
+          INVENTORY_MARGIN + invSlotLeft + INVENTORY_SLOT_NET_SIZE * col;
+        const y = invSlotTop + INVENTORY_SLOT_NET_SIZE * (row - 1);
 
         this.drawSlot(p5, row, col, x, y);
       }
@@ -286,14 +351,32 @@ export class PlayerInventory extends Inventory {
       INVENTORY_PADDING * (this.rows - 2) +
       INVENTORY_MARGIN;
     for (let col = 0; col < this.columns; col++) {
-      const x =
-        INVENTORY_MARGIN +
-        invSlotLeft +
-        INVENTORY_SLOT_SIZE * col +
-        INVENTORY_PADDING * col;
+      const x = INVENTORY_MARGIN + invSlotLeft + INVENTORY_SLOT_NET_SIZE * col;
 
       this.drawSlot(p5, 0, col, x, hotbarY);
     }
+
+    if (this.viewingInventory) {
+      this.viewingInventory.draw(
+        p5,
+        left + INVENTORY_MARGIN + INVENTORY_SLOT_SIZE / 2,
+        top + INVENTORY_MARGIN * 2 + INVENTORY_SLOT_SIZE / 2,
+      );
+    }
+
+    p5.textFont(fonts.minecraft);
+    p5.textSize(18);
+    p5.strokeWeight(1);
+    p5.stroke(120, 120, 120);
+    p5.fill(120, 120, 120);
+    p5.textAlign(p5.LEFT, p5.TOP);
+    p5.text(
+      this.viewingInventory ? this.viewingInventory.name : this.name,
+      left + INVENTORY_MARGIN,
+      top + 3,
+    );
+
+    this.#drawCursorHeldItemStack(p5, p5.mouseX, p5.mouseY);
 
     p5.pop();
   }
@@ -327,6 +410,7 @@ export class PlayerInventory extends Inventory {
         2,
         0,
         18,
+        true,
       );
     }
 
@@ -342,4 +426,87 @@ export class PlayerInventory extends Inventory {
 
     p5.pop();
   }
+
+  /**
+   * Draws the item currently held by the cursor.
+   * @param {p5} p5
+   * @param {number} mouseX
+   * @param {number} mouseY
+   */
+  #drawCursorHeldItemStack(p5, mouseX, mouseY) {
+    if (!this.cursorHeldItemStack) return;
+
+    p5.imageMode(p5.CENTER);
+    p5.textAlign(p5.RIGHT, p5.BOTTOM);
+
+    p5.image(
+      this.cursorHeldItemStack.item.texture,
+      mouseX,
+      mouseY,
+      INVENTORY_SLOT_ITEM_SIZE,
+      INVENTORY_SLOT_ITEM_SIZE,
+    );
+    if (this.cursorHeldItemStack.amount > 1) {
+      p5.textSize(16);
+      p5.textFont(fonts.minecraft);
+      p5.fill(255, 255, 255);
+      p5.strokeWeight(3);
+      p5.stroke(0, 0, 0);
+      p5.text(
+        this.cursorHeldItemStack.amount.toString(),
+        mouseX + INVENTORY_SLOT_SIZE / 2 - 2,
+        mouseY + INVENTORY_SLOT_SIZE / 2 - 2,
+      );
+    }
+  }
+
+  /**
+   * Called when the left mouse button is clicked in the Inventory.
+   */
+  onLeftClick(mouseX, mouseY) {
+    let slotIndex = this.mouseToSlotIndex(mouseX, mouseY);
+    let slot, inventory;
+    if (!slotIndex && this.viewingInventory) {
+      slotIndex = this.viewingInventory.mouseToSlotIndex(mouseX, mouseY);
+      if (!slotIndex) return;
+      inventory = this.viewingInventory;
+    } else if (slotIndex) inventory = this;
+
+    slot = inventory.getAt(...slotIndex);
+
+    if (this.cursorHeldItemStack) {
+      if (slot) {
+        if (slot.item === this.cursorHeldItemStack.item) {
+          if (
+            slot.amount + this.cursorHeldItemStack.amount >
+            ItemStack.MAX_STACK_SIZE
+          ) {
+            this.cursorHeldItemStack.amount -=
+              ItemStack.MAX_STACK_SIZE - slot.amount;
+            slot.amount = ItemStack.MAX_STACK_SIZE;
+          } else {
+            slot.amount += this.cursorHeldItemStack.amount;
+            this.cursorHeldItemStack = null;
+          }
+        } else {
+          let temp = this.cursorHeldItemStack.copy();
+          this.cursorHeldItemStack = slot.copy();
+          inventory.setItemStack(temp, ...slotIndex);
+        }
+      } else {
+        inventory.setItemStack(this.cursorHeldItemStack, ...slotIndex);
+        this.cursorHeldItemStack = null;
+      }
+    } else {
+      if (!slot) return;
+
+      this.cursorHeldItemStack = slot.copy();
+      inventory.setItemStack(null, ...slotIndex);
+    }
+  }
+
+  /**
+   * Called when the left mouse buttom is clicked in the Inventory.
+   */
+  onRightClick(mouseX, mouseY) {}
 }

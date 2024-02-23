@@ -21,7 +21,7 @@ export default class Player {
     this.isJumping = false;
 
     this.inventory = new PlayerInventory(this);
-    this.activeInventory = null;
+    this.isViewingInventory = false;
   }
 
   breakBlock(block, deltaTime) {
@@ -41,9 +41,9 @@ export default class Player {
 
   #onBlockBroken() {
     const drops = this.breakingBlock.getDrops();
-    drops.forEach(stack => {
+    drops.forEach((stack) => {
       if (stack.amount < 1) return;
-      this.inventory.addItem({itemStack: stack});
+      this.inventory.addItem({ itemStack: stack });
     });
 
     this.breakingBlockAmount = 0;
@@ -178,8 +178,7 @@ export default class Player {
   }
 
   toggleInventoryGUI() {
-    if (this.activeInventory) this.activeInventory = null;
-    else this.activeInventory = this.inventory;
+    this.isViewingInventory = !this.isViewingInventory;
   }
 
   draw(p5) {
@@ -194,7 +193,7 @@ export default class Player {
   }
 
   drawActiveInventory(p5) {
-    if (this.activeInventory) this.activeInventory.draw(p5);
+    if (this.isViewingInventory) this.inventory.draw(p5);
 
     this.inventory.drawHotbar(p5);
   }

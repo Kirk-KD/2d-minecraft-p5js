@@ -185,18 +185,27 @@ export class Block {
 
   /**
    * Gets all the defined blocks (including Air) around this Block in a 3x3 area.
+   * @param {boolean} [immediate] Whether or not to only get the blocks immediately next to this one.
    * @return {Block[]} the non-Undefined blocks around this Block.
    */
-  getNeighbors() {
+  getNeighbors(immediate) {
     return [
-      this.world.getBlockAtBlockIndex(this.xIndex - 1, this.yIndex - 1),
+      immediate
+        ? null
+        : this.world.getBlockAtBlockIndex(this.xIndex - 1, this.yIndex - 1),
       this.world.getBlockAtBlockIndex(this.xIndex - 1, this.yIndex),
-      this.world.getBlockAtBlockIndex(this.xIndex - 1, this.yIndex + 1),
+      immediate
+        ? null
+        : this.world.getBlockAtBlockIndex(this.xIndex - 1, this.yIndex + 1),
       this.world.getBlockAtBlockIndex(this.xIndex, this.yIndex - 1),
       this.world.getBlockAtBlockIndex(this.xIndex, this.yIndex + 1),
-      this.world.getBlockAtBlockIndex(this.xIndex + 1, this.yIndex - 1),
+      immediate
+        ? null
+        : this.world.getBlockAtBlockIndex(this.xIndex + 1, this.yIndex - 1),
       this.world.getBlockAtBlockIndex(this.xIndex + 1, this.yIndex),
-      this.world.getBlockAtBlockIndex(this.xIndex + 1, this.yIndex + 1),
+      immediate
+        ? null
+        : this.world.getBlockAtBlockIndex(this.xIndex + 1, this.yIndex + 1),
     ].filter((x) => x);
   }
 
@@ -226,7 +235,11 @@ export class Block {
    * @return {boolean} whether or not the block is defined and is not Air.
    */
   static canHighlight(block) {
-    return block && block.type !== BlockType.AIR;
+    return (
+      block &&
+      (block.type !== BlockType.AIR ||
+        block.getNeighbors(true).some((x) => Block.hasCollision(x)))
+    );
   }
 
   /**

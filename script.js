@@ -106,6 +106,14 @@ new p5((p5) => {
     const dir = event.delta < 0 ? -1 : 1;
     player.inventory.scrollSelectedHotbarSlot(dir);
   };
+
+  p5.mousePressed = () => {
+    if (p5.mouseButton === p5.LEFT) {
+      if (player.isViewingInventory) {
+        player.inventory.onLeftClick(p5.mouseX, p5.mouseY);
+      }
+    }
+  };
 });
 
 const K_A = 65,
