@@ -281,6 +281,14 @@ export class PlayerInventory extends Inventory {
   }
 
   /**
+   * Sets the item held by the Player.
+   * @param {ItemStack?} newItemStack
+   */
+  setSelectedSlot(newItemStack) {
+    this.setItemStack(newItemStack, 0, this.selectedHotbarSlot);
+  }
+
+  /**
    * Scroll the hotbar selection in the specified direction.
    * @param {number} dir
    */

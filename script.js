@@ -33,6 +33,7 @@ let finishedLoading = false;
 new p5((p5) => {
   p5.preload = () => {
     p5Div = document.getElementById("p5-div");
+    p5Div.addEventListener("contextmenu", (event) => event.preventDefault());
     setWidth(Utils.elementWidth(p5Div));
     setHeight(Utils.elementHeight(p5Div));
 

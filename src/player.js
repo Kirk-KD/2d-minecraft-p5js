@@ -44,6 +44,20 @@ export default class Player {
       );
   }
 
+  placeBlock(block, blockClass) {
+    block.replace(blockClass);
+    this.getHeldItemStack().amount--;
+    if (this.getHeldItemStack().amount === 0) this.setHeldItemStack(null);
+  }
+
+  setHeldItemStack(itemStack) {
+    this.inventory.setSelectedSlot(itemStack);
+  }
+
+  getHeldItemStack() {
+    return this.inventory.getSelectedSlot();
+  }
+
   #onBlockBroken() {
     const drops = this.breakingBlock.getDrops();
     drops.forEach((stack) => {

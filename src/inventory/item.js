@@ -1,7 +1,7 @@
 /// <reference path="../../p5.global-mode.d.ts" />
 
 import { blocksTextures } from "../assets.js";
-import { BlockType } from "../block.js";
+import { BlockType, blocks } from "../block.js";
 
 /**
  * Base class for an Item.
@@ -30,14 +30,19 @@ export class BlockItem extends Item {
   /**
    * @param {string} id
    * @param {BlockType} type
+   * @param {any} blockClass
    */
-  constructor(id, type) {
+  constructor(id, type, blockClass) {
     super(id, blocksTextures[type]);
 
     /**
      * @type {BlockType}
      */
     this.blockType = type;
+    /**
+     * @type {any}
+     */
+    this.blockClass = blockClass;
   }
 }
 
@@ -78,7 +83,7 @@ export let items;
 
 export function loadItems() {
   items = {
-    Dirt: new BlockItem("dirt", BlockType.DIRT),
-    Wood: new BlockItem("wood", BlockType.WOOD),
+    Dirt: new BlockItem("dirt", BlockType.DIRT, blocks.DirtBlock),
+    Wood: new BlockItem("wood", BlockType.WOOD, blocks.WoodBlock),
   };
 }

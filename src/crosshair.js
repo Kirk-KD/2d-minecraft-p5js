@@ -1,5 +1,6 @@
-import { Block } from "./block.js";
+import { Block, BlockType } from "./block.js";
 import { BLOCK_SIZE, CROSSHAIR_SIZE, PLAYER_REACH } from "./config.js";
+import { BlockItem } from "./inventory/item.js";
 
 export default class Crosshair {
   constructor(p5, world, camera, player) {
@@ -43,7 +44,11 @@ export default class Crosshair {
       this.player.breakBlock(this.lookingAtBlock, deltaTime);
   }
 
-  rightClickHeld(deltaTime) {}
+  rightClickHeld(deltaTime) {
+    const heldItemStack = this.player.getHeldItemStack();
+    if (this.lookingAtBlock.type === BlockType.AIR && heldItemStack !== null && heldItemStack.item.constructor === BlockItem)
+      this.player.placeBlock(this.lookingAtBlock, heldItemStack.item.blockClass);
+  }
 
   draw(p5) {
     if (Block.canHighlight(this.lookingAtBlock))
