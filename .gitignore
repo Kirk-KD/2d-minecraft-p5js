@@ -1,3 +1,4 @@
 .breakpoints
 tsconfig.json
 types.d.ts
+count_lines.sh

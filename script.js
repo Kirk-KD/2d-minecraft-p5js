@@ -5,7 +5,7 @@ import {
   setHeight,
   WIDTH,
   HEIGHT,
-  PLAYER_SPRINT_BONUS,
+  PLAYER_SPRINT_MULT,
 } from "./src/config.js";
 import { loadTextures, loadFonts } from "./src/assets.js";
 import Camera from "./src/camera.js";
@@ -103,11 +103,15 @@ new p5((p5) => {
   };
 
   p5.mouseWheel = (event) => {
+    if (!finishedLoading) return;
+
     const dir = event.delta < 0 ? -1 : 1;
     player.inventory.scrollSelectedHotbarSlot(dir);
   };
 
   p5.mousePressed = () => {
+    if (!finishedLoading) return;
+
     if (p5.mouseButton === p5.LEFT) {
       if (player.isViewingInventory) {
         player.inventory.onLeftClick(p5.mouseX, p5.mouseY);
@@ -124,14 +128,10 @@ const K_A = 65,
   K_SHIFT = 16;
 
 function keyboardInput(p5) {
-  const shift = p5.keyIsDown(K_SHIFT);
-
   let dx = 0;
-
-  if (p5.keyIsDown(K_A)) dx = -1 - PLAYER_SPRINT_BONUS * shift;
-  if (p5.keyIsDown(K_D)) dx = 1 + PLAYER_SPRINT_BONUS * shift;
+  if (p5.keyIsDown(K_A)) dx = -1;
+  if (p5.keyIsDown(K_D)) dx = 1;
 
   camera.peek(p5.keyIsDown(K_W), p5.keyIsDown(K_S));
-
-  player.physics(deltaTime, dx, p5.keyIsDown(K_SPACE));
+  player.physics(deltaTime, dx, p5.keyIsDown(K_SPACE), p5.keyIsDown(K_SHIFT));
 }

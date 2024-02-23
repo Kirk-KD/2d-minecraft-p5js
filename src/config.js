@@ -12,7 +12,8 @@ export const MAX_SKY_LIGHT = 1;
 export const MIN_SKY_LIGHT = 0.4;
 
 export const PLAYER_MOVE_SPEED = 3;
-export const PLAYER_SPRINT_BONUS = 0.5;
+export const PLAYER_SPRINT_MULT = 1.6;
+export const PLAYER_JUMP_SPRINT_MULT = 1.4;
 export const PLAYER_REACH = 5;
 
 export const CROSSHAIR_SIZE = 20;

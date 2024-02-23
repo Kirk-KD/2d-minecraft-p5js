@@ -1,4 +1,9 @@
-import { PLAYER_MOVE_SPEED, BLOCK_SIZE } from "./config.js";
+import {
+  PLAYER_MOVE_SPEED,
+  BLOCK_SIZE,
+  PLAYER_SPRINT_MULT,
+  PLAYER_JUMP_SPRINT_MULT,
+} from "./config.js";
 import { Block, blocks } from "./block.js";
 import { PlayerInventory } from "./inventory/inventory.js";
 import { items } from "./inventory/item.js";
@@ -51,7 +56,7 @@ export default class Player {
     this.breakingBlock = null;
   }
 
-  physics(deltaTime, xMoveDirection, jump) {
+  physics(deltaTime, xMoveDirection, jump, sprint) {
     // going up, check for top collision
     if (this.yVel < 0) {
       this.isJumping = true;
@@ -60,10 +65,8 @@ export default class Player {
       if (topCollision) this.#stopJump(topCollision);
     }
 
-    if (this.isJumping) xMoveDirection *= 1.2;
-
     this.#gravity(deltaTime);
-    this.#xMovement(deltaTime, xMoveDirection);
+    this.#xMovement(deltaTime, xMoveDirection, this.isJumping, sprint);
 
     if (jump) this.#jump();
 
@@ -87,8 +90,12 @@ export default class Player {
     this.isFalling = false;
   }
 
-  #xMovement(deltaTime, direction) {
-    this.xVel = direction * PLAYER_MOVE_SPEED;
+  #xMovement(deltaTime, direction, isJumping, isSprinting) {
+    this.xVel =
+      direction *
+      PLAYER_MOVE_SPEED *
+      (isSprinting ? PLAYER_SPRINT_MULT : 1) *
+      (isJumping ? PLAYER_JUMP_SPRINT_MULT : 1);
 
     if (direction == 0) return;
 
