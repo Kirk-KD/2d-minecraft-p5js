@@ -46,8 +46,15 @@ export default class Crosshair {
 
   rightClickHeld(deltaTime) {
     const heldItemStack = this.player.getHeldItemStack();
-    if (this.lookingAtBlock.type === BlockType.AIR && heldItemStack !== null && heldItemStack.item.constructor === BlockItem)
-      this.player.placeBlock(this.lookingAtBlock, heldItemStack.item.blockClass);
+    if (
+      Block.canPlaceBlock(this.lookingAtBlock) &&
+      heldItemStack !== null &&
+      heldItemStack.item.constructor === BlockItem
+    )
+      this.player.placeBlock(
+        this.lookingAtBlock,
+        heldItemStack.item.blockClass,
+      );
   }
 
   draw(p5) {

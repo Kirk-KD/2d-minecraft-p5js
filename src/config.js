@@ -11,6 +11,7 @@ export const LIGHT_DISTANCE = 8;
 export const MAX_SKY_LIGHT = 1;
 export const MIN_SKY_LIGHT = 0.4;
 
+export const PLAYER_PLACE_BLOCK_COOLDOWN = 250;
 export const PLAYER_MOVE_SPEED = 3;
 export const PLAYER_SPRINT_MULT = 1.6;
 export const PLAYER_JUMP_SPRINT_MULT = 1.4;

@@ -3,10 +3,10 @@ import {
   BLOCK_SIZE,
   PLAYER_SPRINT_MULT,
   PLAYER_JUMP_SPRINT_MULT,
+  PLAYER_PLACE_BLOCK_COOLDOWN,
 } from "./config.js";
 import { Block, blocks } from "./block.js";
 import { PlayerInventory } from "./inventory/inventory.js";
-import { items } from "./inventory/item.js";
 
 export default class Player {
   constructor(p5, world, width, height) {
@@ -21,6 +21,7 @@ export default class Player {
 
     this.breakingBlock = null;
     this.breakingBlockAmount = 0;
+    this.lastPlaceBlockTime = 0;
 
     this.isFalling = true;
     this.isJumping = false;
@@ -45,9 +46,27 @@ export default class Player {
   }
 
   placeBlock(block, blockClass) {
+    if (Date.now() - this.lastPlaceBlockTime < PLAYER_PLACE_BLOCK_COOLDOWN)
+      return;
+
+    if (!this.#canPlaceBlockAt(block)) return;
+
+    this.lastPlaceBlockTime = Date.now();
     block.replace(blockClass);
     this.getHeldItemStack().amount--;
     if (this.getHeldItemStack().amount === 0) this.setHeldItemStack(null);
+  }
+
+  #canPlaceBlockAt(block) {
+    return !(
+      ((block.xIndex < this.x + this.width / 2 &&
+        this.x + this.width / 2 < block.xIndex + 1) ||
+        (block.xIndex < this.x - this.width / 2 &&
+          this.x - this.width / 2 < block.xIndex + 1)) &&
+      ((block.yIndex < this.y && this.y < block.yIndex + 1) ||
+        (block.yIndex < this.y - this.height &&
+          this.y - this.height < block.yIndex + 1))
+    );
   }
 
   setHeldItemStack(itemStack) {

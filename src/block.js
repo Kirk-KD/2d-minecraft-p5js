@@ -243,6 +243,19 @@ export class Block {
   }
 
   /**
+   * Determines if the block is able to be replaced by placing a block.
+   * @param {Block} block
+   * @return {boolean} whether or not the block is defined and can place a new block on.
+   */
+  static canPlaceBlock(block) {
+    return (
+      block &&
+      block.type === BlockType.AIR &&
+      block.getNeighbors(true).some((x) => Block.hasCollision(x))
+    );
+  }
+
+  /**
    * Determines if the block can be broken.
    * @param {Block} block
    * @return {boolean} whether or not the block is defined, is not Air, and has a
