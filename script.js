@@ -116,9 +116,11 @@ new p5((p5) => {
     if (!finishedLoading) return;
 
     if (p5.mouseButton === p5.LEFT) {
-      if (player.isViewingInventory) {
+      if (player.isViewingInventory)
         player.inventory.onLeftClick(p5.mouseX, p5.mouseY);
-      }
+    } else if (p5.mouseButton === p5.RIGHT) {
+      if (player.isViewingInventory)
+        player.inventory.onRightClick(p5.mouseX, p5.mouseY);
     }
   };
 });

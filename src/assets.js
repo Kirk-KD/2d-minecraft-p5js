@@ -2,13 +2,6 @@ import { BlockType } from "./block.js";
 import { BLOCK_SIZE } from "./config.js";
 
 const encodedImages = {
-  dirt: "data:image/webp;base64,UklGRhoBAABXRUJQVlA4TA0BAAAvn8AnAIWjtpEECdnA2N0DsTROy7xUqfrWw0jbyLkJKTz0+I20jTT/Bo89e1YR/Wfktm0Y+wNKLobT7QP/n/B7Z/naW26QHoTpHB7LFouyKHlzeHxfCStSuj9KdbC8z1IJ5iWiyQed48vtYJ+lUu0t4VwranS1XMIutSiLYlbb8G54uf2p3VPSfRZtSrlsPFjOzZZrd/us3B3uK+HcHJQql+xbLMrS/WqNpm6DeZ/VIPVYaN/KzUbp91nd9xl5pYu50dU2W417nbdTj5l2Ne92uM9qXNpyf6+oXkabHKXaZ1HS4Iaqpim+1KIJ+0M49/LjNbTGP5mrrMZEuc7Uzcb1ViOJ6TuOt4NGJs+zDgA=",
-  grass:
-    "data:image/webp;base64,UklGRngBAABXRUJQVlA4TGsBAAAvn8AnAHXArW1bVVUZZVgRtMEgJSN0d/ju7n2tcfY56fluSNpI0gk5eOjx+08tjCMkbSTp/AsoH1XHnj07Ef2H2DaSI6mYQPW86XUR7AL2ATuAISYrQAswB5wDaI4pYASYADqABmAByM/ZA9BsRwXWBbYFCntgDOgC6KyuC1wUoBOn06B56dRmgPyc0wI070uBPoD2IGUNoC60py8AVwXuC1DTJqANoFZpOSbVGfBpsgF8ij4AdVkAqEvxPqD2tlb5OdX3gK1L7S+gztjU5FP0D2xTZuqoE1HUU/s08ZvtV0Q/j7Qck19RfQb4zaG28tvs+Tl+U6q7Vt26EZ3zcyKa2rqo91t+s6nt83Ni38/gUzo3EfdqOTsRz+tsZ2rrrN6r2Z4d5udEPGlT9+A/oPsy9U5ObZWfozZ1PKFQ6hbP1FE3bGUP+L35sd2h2fal+u1CVk7ERH73TLG7MXsnYhOr73FsZxCxk9NzPgEA",
-  wood: "data:image/webp;base64,UklGRvAAAABXRUJQVlA4TOQAAAAvn8AnAC+gpm0jODl2au+/A3FEAqTByAA0+kO1bduwqcktbc78x/9nDgVvuw0gcBRJbhiJwlIQhaUgCuYPZlSbu69eEf2fAFMcOiwOHRbNoTg0m5ftsZk8Nv/g8LIVO/yDuCg8b8PFTEQzaS7FZHjZxE/F5DFpmuJiHjVTNIfiIiZD8cY1f9OhOTQXh4eumJjL0OHSXJqXbRWXR4efmsnwxq3ibxwm4mIWz9s6XJpmMTGvnfivR4fFx0U8ao/JOlyGSTNx2Lxsppg4FIeJmKT3bJgMHQ6Lppisw2snJuKn9VPzngE=",
-  leaves:
-    "data:image/webp;base64,UklGRgIBAABXRUJQVlA4TPYAAAAvn8AnECegqG0bOFUM92uMpiYAATZmZXBJQlHbNlBvKOMPcI/5DwD+9zpbMQ9oIkkNFrDwFrCAf1P380lNFdH/CRCLTYXDpcJihxWKw3tmje1ww6cJl8YetabR1w6XE27YNB2esuXQLIdJ0Vi93jhbNLa+KiwOl8bes2eFTx1WuOGE92wpNosdDvdVbBbFG2eNNeLT0FhjNzxlzQqXQ3Go0FjRWGPvWdo01iyHyYTL4oT3zBprxKKxwwo3vHEVdigOxXodKiwetWJTYWKL4nDDoWlWeM8mXE7YTPb1yd4z0SyHy8RWqLA5YfGopRtW+GQ7TPT1gAE=",
-
   cracks: [
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAgMAAAAHi4lGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAlQTFRFAAAAPT09jIyM+2BbUAAAAAN0Uk5TAP//RFDWIQAAAFxJREFUeJztzcEJADAIADGX7JKdUnCCfiqCyQB3EQAAAAAAAAAAAAAAALDMKdLS0tLS0tLS/elbvgykpaWlpaWlpZ8H0tLS0tLS0tL9aQAAAAAAAAAAAAAAABgvAZalHvCKwZ2eAAAAAElFTkSuQmCC",
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAgMAAAAHi4lGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAlQTFRFAAAAPT09jIyM+2BbUAAAAAN0Uk5TAP//RFDWIQAAAHtJREFUeJzt1qENACAMRcEuyZJMSQIGCUnB9E5VvW8bAQAAAAAAAABAYW2SlpaWlpaWlpaWlpaWlpaWrpPu0z6QNiYtLS0tLS0tfTmwbmlpaWlpaWnpP+kl+bmRlpaWlpaWlj725LmRlpaWlpaWlgYAAAAAAAAAAACATAPJuJ1/VN7aDgAAAABJRU5ErkJggg==",
@@ -19,7 +12,10 @@ const encodedImages = {
   ],
 };
 
+const itemIDs = ["stick"];
+
 export let blocksTextures = {};
+export let itemsTextures = {};
 export let textures = {
   cracks: [],
 };
@@ -36,8 +32,16 @@ export function loadTextures(p5) {
   Object.values(BlockType).forEach((name) => {
     if (name === "air") return;
     promises.push(
-      loadTexture(p5, encodedImages[name]).then((img) => {
+      loadTexture(p5, `../images/blocks/${name}.webp`).then((img) => {
         blocksTextures[name] = img;
+      }),
+    );
+  });
+
+  itemIDs.forEach((id) => {
+    promises.push(
+      loadTexture(p5, `../images/items/${id}.webp`).then((img) => {
+        itemsTextures[id] = img;
       }),
     );
   });
@@ -53,7 +57,7 @@ export function loadTextures(p5) {
   return Promise.all(promises);
 }
 
-function loadTexture(p5, data) {
+function loadTexture(p5, path) {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -62,7 +66,7 @@ function loadTexture(p5, data) {
     canvas.height = BLOCK_SIZE;
 
     let img = new Image();
-    img.src = data;
+    img.src = path;
     img.onload = () => {
       ctx.drawImage(img, 0, 0, BLOCK_SIZE, BLOCK_SIZE);
       resolve(

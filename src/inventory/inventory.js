@@ -125,6 +125,8 @@ export class Inventory {
    * @param {number} topLeftY
    */
   draw(p5, topLeftX, topLeftY) {
+    p5.imageMode(p5.CENTER);
+    p5.textAlign(p5.RIGHT, p5.BOTTOM);
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.columns; col++)
         this.drawSlot(
@@ -645,5 +647,39 @@ export class PlayerInventory extends Inventory {
   /**
    * Called when the left mouse buttom is clicked in the Inventory.
    */
-  onRightClick(mouseX, mouseY) {}
+  onRightClick(mouseX, mouseY) {
+    let slotIndex = this.mouseToSlotIndex(mouseX, mouseY);
+    let slot, inventory;
+    if (!slotIndex) {
+      if (this.viewingInventory) {
+        slotIndex = this.viewingInventory.mouseToSlotIndex(mouseX, mouseY);
+        if (!slotIndex) return;
+        inventory = this.viewingInventory;
+      } else {
+        slotIndex = this.quickCraft.mouseToSlotIndex(mouseX, mouseY);
+        if (slotIndex) inventory = this.quickCraft;
+        else return;
+      }
+    } else if (slotIndex) inventory = this;
+
+    if (!inventory) return;
+
+    slot = inventory.getAt(...slotIndex);
+
+    if (this.cursorHeldItemStack) {
+      if (!slot) {
+        this.cursorHeldItemStack.amount--;
+        inventory.setItemStack(
+          new ItemStack(this.cursorHeldItemStack.item, 1),
+          ...slotIndex,
+        );
+      } else if (slot.item === this.cursorHeldItemStack.item) {
+        this.cursorHeldItemStack.amount--;
+        slot.amount++;
+      }
+
+      if (this.cursorHeldItemStack.amount === 0)
+        this.cursorHeldItemStack = null;
+    }
+  }
 }

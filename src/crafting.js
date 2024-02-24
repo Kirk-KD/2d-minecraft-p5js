@@ -9,7 +9,8 @@ export class CraftingGrid {
 class Recipe {
   constructor(charToItem, resultItem, resultAmount) {
     this.charToItem = charToItem;
-    this.itemToChar = inverse(charToItem);
+    this.itemIDToChar = {};
+    for (let key in this.charToItem) this.itemIDToChar[this.charToItem[key].id] = key;
 
     this.resultItem = resultItem;
     this.resultAmount = resultAmount || 1;
@@ -57,7 +58,7 @@ class ShapedRecipe extends Recipe {
         for (let col = 0; col < 3; col++) {
           if (
             (craftingGrid.grid[row][col]
-              ? this.itemToChar[craftingGrid.grid[row][col]]
+              ? this.itemIDToChar[craftingGrid.grid[row][col].id]
               : null) !== this.shapes[i][row][col]
           ) {
             valid = false;
@@ -79,8 +80,9 @@ export const recipes = new (class {
 
   getResult(craftingGrid) {
     for (let i = 0; i < this.recipes.length; i++) {
-      if (this.recipes[i].validate(craftingGrid))
+      if (this.recipes[i].validate(craftingGrid)) {
         return this.recipes[i].getResult();
+      }
     }
   }
 
@@ -98,5 +100,7 @@ function inverse(obj) {
 }
 
 export function loadRecipes() {
-  recipes.register(new ShapedRecipe(["W"], { W: items.Wood }, items.Dirt, 4));
+  recipes.register(new ShapedRecipe(["W"], { "W": items.Wood }, items.Plank, 4));
+  recipes.register(new ShapedRecipe(["P",
+                                     "P"], { "P": items.Plank }, items.Stick, 4));
 }

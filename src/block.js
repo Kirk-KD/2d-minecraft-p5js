@@ -17,6 +17,7 @@ export const BlockType = {
   DIRT: "dirt",
   GRASS: "grass",
   WOOD: "wood",
+  PLANK: "plank",
   LEAVES: "leaves",
 };
 
@@ -359,6 +360,26 @@ export const blocks = {
     }
   },
 
+  PlankBlock: class extends Block {
+    constructor(world, columnHeight, chunk, localXIndex, yIndex, isBackground) {
+      super(
+        world,
+        columnHeight,
+        chunk,
+        localXIndex,
+        yIndex,
+        BlockType.PLANK,
+        isBackground,
+      );
+      this.opacity = 1;
+      this.breakTime = 3;
+    }
+
+    getDrops() {
+      return [new ItemStack(items.Plank, 1)];
+    }
+  },
+
   LeavesBlock: class extends Block {
     constructor(world, columnHeight, chunk, localXIndex, yIndex, isBackground) {
       super(
@@ -375,7 +396,7 @@ export const blocks = {
     }
 
     getDrops() {
-      return [new ItemStack(items.Wood, Utils.chance(0.1) ? 1 : 0)];
+      return [new ItemStack(items.Stick, Utils.chance(0.1) ? 1 : 0)];
     }
   },
 };

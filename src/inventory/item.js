@@ -1,6 +1,6 @@
 /// <reference path="../../p5.global-mode.d.ts" />
 
-import { blocksTextures } from "../assets.js";
+import { blocksTextures, itemsTextures } from "../assets.js";
 import { BlockType, blocks } from "../block.js";
 
 /**
@@ -9,7 +9,7 @@ import { BlockType, blocks } from "../block.js";
 export class Item {
   /**
    * @param {string} id
-   * @param {p5.Image} texture
+   * @param {p5.Image} [texture]
    */
   constructor(id, texture) {
     /**
@@ -19,7 +19,7 @@ export class Item {
     /**
      * @type {p5.Image}
      */
-    this.texture = texture;
+    this.texture = texture || itemsTextures[this.id];
   }
 }
 
@@ -85,5 +85,8 @@ export function loadItems() {
   items = {
     Dirt: new BlockItem("dirt", BlockType.DIRT, blocks.DirtBlock),
     Wood: new BlockItem("wood", BlockType.WOOD, blocks.WoodBlock),
+    Plank: new BlockItem("plank", BlockType.PLANK, blocks.PlankBlock),
+
+    Stick: new Item("stick"),
   };
 }
