@@ -12,6 +12,14 @@ export class PerlinGeneration {
     return Math.round(70 + this.p5.noise((this.seed + x) * 0.1) * 15);
   }
 
+  getStoneHeight(x) {
+    return Math.round(78 + this.p5.noise((this.seed + x) * 0.1) * 9);
+  }
+
+  getCaveValue(x, y) {
+    return this.p5.noise((this.seed + x * 0.05), (this.seed + y * 0.05));
+  }
+
   getTree(x) {
     return this.p5.noise((this.seed * Math.PI + x) * 0.1);
   }
@@ -55,7 +63,12 @@ class TreeStructure {
 export const TREE_STRUCTURES = {
   oak: [
     new TreeStructure(
-      [" ### ", "#####", "##H##", "  H  ", "  H  "],
+      [" ### ",
+       "#####",
+       "##H##",
+       "  H  ",
+       "  H  "
+      ],
       {
         "#": blocks.LeavesBlock,
         H: blocks.WoodBlock,
@@ -76,7 +89,7 @@ export const TREE_STRUCTURES = {
         "#": blocks.LeavesBlock,
         H: blocks.WoodBlock,
       },
-      2,
+      3,
     ),
     new TreeStructure(
       [
@@ -92,7 +105,7 @@ export const TREE_STRUCTURES = {
         "#": blocks.LeavesBlock,
         H: blocks.WoodBlock,
       },
-      2,
+      3,
     ),
   ],
 };

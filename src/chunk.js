@@ -26,9 +26,20 @@ export default class Chunk {
       const maxY = this.world.terrainGenerator.getHeight(
         x + this.xIndex * CHUNK_WIDTH,
       );
+      const maxStoneY = this.world.terrainGenerator.getStoneHeight(
+        x + this.xIndex * CHUNK_WIDTH,
+      );
 
       for (let y = 0; y < MAX_HEIGHT; y++) {
-        if (y > maxY) this.setBlock(x, y, blocks.DirtBlock);
+        const isCave =
+          this.world.terrainGenerator.getCaveValue(
+            x + this.xIndex * CHUNK_WIDTH,
+            y,
+          ) >= 0.65;
+
+        if (isCave) this.setBlock(x, y, blocks.AirBlock);
+        else if (y >= maxStoneY) this.setBlock(x, y, blocks.StoneBlock);
+        else if (y > maxY) this.setBlock(x, y, blocks.DirtBlock);
         else if (y == maxY) this.setBlock(x, y, blocks.GrassBlock);
         else this.setBlock(x, y, blocks.AirBlock);
       }
@@ -85,7 +96,8 @@ export default class Chunk {
 
       if (
         this.world.terrainGenerator.getTree(globalX) > 0.5 &&
-        this.blocks[localX][columnHeight].type !== BlockType.AIR &&
+        (this.blocks[localX][columnHeight].type === BlockType.GRASS ||
+          this.blocks[localX][columnHeight].type === BlockType.DIRT) &&
         this.blocks[localX - 1][columnHeight - 1].type === BlockType.AIR &&
         this.blocks[localX + 1][columnHeight - 1].type === BlockType.AIR &&
         (this.trees.length === 0 ||

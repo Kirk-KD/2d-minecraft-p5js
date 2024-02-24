@@ -19,6 +19,7 @@ export const BlockType = {
   WOOD: "wood",
   PLANK: "plank",
   LEAVES: "leaves",
+  STONE: "stone"
 };
 
 /**
@@ -174,7 +175,7 @@ export class Block {
     p5.stroke(0);
     p5.fill(255);
     p5.text(
-      `${this.type} (${this.xIndex},${this.yIndex}) Light: ${this.lightLevel}`,
+      `${this.type} (${this.xIndex},${this.yIndex}) Light: ${this.lightLevel} Cave: ${this.world.terrainGenerator.getCaveValue(this.xIndex, this.yIndex)}`,
       this.screenX,
       this.screenY - 10,
     );
@@ -397,6 +398,26 @@ export const blocks = {
 
     getDrops() {
       return [new ItemStack(items.Stick, Utils.chance(0.1) ? 1 : 0)];
+    }
+  },
+
+  StoneBlock: class extends Block {
+    constructor(world, columnHeight, chunk, localXIndex, yIndex, isBackground) {
+      super(
+        world,
+        columnHeight,
+        chunk,
+        localXIndex,
+        yIndex,
+        BlockType.STONE,
+        isBackground,
+      );
+      this.opacity = 1;
+      this.breakTime = 7.5;
+    }
+
+    getDrops() {
+      return [];
     }
   },
 };

@@ -5,7 +5,6 @@ import {
   setHeight,
   WIDTH,
   HEIGHT,
-  PLAYER_SPRINT_MULT,
 } from "./src/config.js";
 import { loadTextures, loadFonts } from "./src/assets.js";
 import Camera from "./src/camera.js";
