@@ -15,6 +15,7 @@ import Player from "./src/player.js";
 import Crosshair from "./src/crosshair.js";
 import LightingCalculation from "./src/lighting.js";
 import { loadItems } from "./src/inventory/item.js";
+import { loadRecipes } from "./src/crafting.js";
 
 let camera;
 let world;
@@ -40,6 +41,7 @@ new p5((p5) => {
     loadTextures(p5).then(() => {
       loadFonts(p5);
       loadItems();
+      loadRecipes();
 
       world = new World(p5, lighting);
       camera = new Camera(p5, world);

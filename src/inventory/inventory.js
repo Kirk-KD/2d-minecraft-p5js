@@ -16,6 +16,7 @@ import {
 } from "../config.js";
 import { ItemStack } from "./item.js";
 import { fonts } from "../assets.js";
+import { CraftingGrid, recipes } from "../crafting.js";
 
 /**
  * @typedef {import("./item.js").Item} Item
@@ -25,7 +26,7 @@ import { fonts } from "../assets.js";
 /**
  * Base class for any types of inventory.
  */
-class Inventory {
+export class Inventory {
   /**
    * @param {number} rows
    * @param {number} columns
@@ -206,6 +207,41 @@ class Inventory {
   }
 
   /**
+   * Draws a freely placed slot.
+   */
+  drawSlotFree(p5, slot, x, y) {
+    p5.imageMode(p5.CENTER);
+    p5.textAlign(p5.RIGHT, p5.BOTTOM);
+
+    p5.stroke(70, 70, 70);
+    p5.strokeWeight(2);
+    p5.fill(160, 160, 160);
+    p5.rect(x, y, INVENTORY_SLOT_SIZE, INVENTORY_SLOT_SIZE, 4);
+
+    if (!slot) return;
+
+    p5.image(
+      slot.item.texture,
+      x,
+      y,
+      INVENTORY_SLOT_ITEM_SIZE,
+      INVENTORY_SLOT_ITEM_SIZE,
+    );
+    if (slot.amount > 1) {
+      p5.textSize(16);
+      p5.textFont(fonts.minecraft);
+      p5.fill(255, 255, 255);
+      p5.strokeWeight(3);
+      p5.stroke(0, 0, 0);
+      p5.text(
+        slot.amount.toString(),
+        x + INVENTORY_SLOT_SIZE / 2 - 2,
+        y + INVENTORY_SLOT_SIZE / 2 - 2,
+      );
+    }
+  }
+
+  /**
    * Sets the slot to an ItemStack.
    * @param {ItemStack?} itemStack
    * @param {number} row
@@ -239,6 +275,64 @@ class Inventory {
 }
 
 /**
+ * Base class for any crafting inventory.
+ */
+class CraftingInventory extends Inventory {
+  /**
+   * @param {number} size
+   * @param {string} name
+   */
+  constructor(size, name) {
+    super(size, size, name);
+    this.craftResult = null;
+
+    this.resultX = null;
+    this.resultY = null;
+  }
+
+  draw(p5, topLeftX, topLeftY) {
+    this.craftResult = recipes.getResult(this.getCraftingGrid());
+
+    super.draw(p5, topLeftX, topLeftY);
+    this.resultX = topLeftX + INVENTORY_SLOT_NET_SIZE * 3;
+    this.resultY = topLeftY + INVENTORY_SLOT_NET_SIZE / 2;
+    this.drawSlotFree(p5, this.craftResult, this.resultX, this.resultY);
+  }
+
+  isClickingOnResult(mouseX, mouseY) {
+    return (
+      Math.abs(mouseX - this.resultX) < INVENTORY_SLOT_SIZE / 2 &&
+      Math.abs(mouseY - this.resultY) < INVENTORY_SLOT_SIZE / 2
+    );
+  }
+
+  getCraftingGrid() {}
+}
+
+/**
+ * Class for the 2x2 crafting area in the player's inventory.
+ */
+class QuickCraft extends CraftingInventory {
+  constructor() {
+    super(2, "Quick Craft");
+  }
+
+  getCraftingGrid() {
+    return new CraftingGrid(
+      this.slots
+        .map((row) => {
+          return row
+            .map((slot) => {
+              return slot ? slot.item : null;
+            })
+            .concat([null]);
+        })
+        .concat([[null, null, null]]),
+    );
+  }
+}
+
+/**
  * Object representing the Player's inventory.
  */
 export class PlayerInventory extends Inventory {
@@ -265,12 +359,14 @@ export class PlayerInventory extends Inventory {
     /**
      * @type {Inventory?}
      */
-    this.viewingInventory = new Inventory(3, 9, "Chest");
+    this.viewingInventory = null;
 
     /**
      * @type {ItemStack?}
      */
     this.cursorHeldItemStack = null;
+
+    this.quickCraft = new QuickCraft();
   }
 
   /**
@@ -384,6 +480,16 @@ export class PlayerInventory extends Inventory {
       top + 3,
     );
 
+    if (!this.viewingInventory)
+      this.quickCraft.draw(
+        p5,
+        left +
+          invWidth -
+          (this.quickCraft.columns + 2) * INVENTORY_SLOT_NET_SIZE -
+          INVENTORY_MARGIN,
+        top + INVENTORY_MARGIN + INVENTORY_SLOT_NET_SIZE,
+      );
+
     this.#drawCursorHeldItemStack(p5, p5.mouseX, p5.mouseY);
 
     p5.pop();
@@ -474,11 +580,34 @@ export class PlayerInventory extends Inventory {
   onLeftClick(mouseX, mouseY) {
     let slotIndex = this.mouseToSlotIndex(mouseX, mouseY);
     let slot, inventory;
-    if (!slotIndex && this.viewingInventory) {
-      slotIndex = this.viewingInventory.mouseToSlotIndex(mouseX, mouseY);
-      if (!slotIndex) return;
-      inventory = this.viewingInventory;
+    if (!slotIndex) {
+      if (this.viewingInventory) {
+        slotIndex = this.viewingInventory.mouseToSlotIndex(mouseX, mouseY);
+        if (!slotIndex) return;
+        inventory = this.viewingInventory;
+      } else {
+        slotIndex = this.quickCraft.mouseToSlotIndex(mouseX, mouseY);
+        if (slotIndex) inventory = this.quickCraft;
+        else if (this.quickCraft.isClickingOnResult(mouseX, mouseY)) {
+          if (this.cursorHeldItemStack)
+            this.addItem({ itemStack: this.cursorHeldItemStack });
+          this.cursorHeldItemStack = this.quickCraft.craftResult;
+
+          if (this.quickCraft.craftResult) {
+            this.quickCraft.slots.forEach((row, i) => {
+              row.forEach((slot, j) => {
+                if (slot && !--slot.amount) this.quickCraft.slots[i][j] = null;
+              });
+            });
+          }
+
+          this.quickCraft.craftResult = null;
+          return;
+        } else return;
+      }
     } else if (slotIndex) inventory = this;
+
+    if (!inventory) return;
 
     slot = inventory.getAt(...slotIndex);
 
