@@ -194,12 +194,12 @@ export default class World {
    * Gets a block at a specific index at x and y.
    * @param {number} x
    * @param {number} y
-   * @return {Block}
+   * @return {Block?}
    */
   getBlockAtBlockIndex(x, y) {
     let i = Math.floor(x) % CHUNK_WIDTH;
     i = Math.abs(i < 0 ? CHUNK_WIDTH - Math.abs(i) : i);
     const chunk = this.chunks.getAtXIndex(this.xBlockIndexToChunkIndex(x));
-    if (chunk) return chunk.blocks[i][Math.floor(y)];
+    return chunk ? chunk.blocks[i][Math.floor(y)] : null;
   }
 }

@@ -46,7 +46,7 @@ new p5((p5) => {
       camera = new Camera(p5, world);
       player = new Player(p5, world, 0.8, 1.8);
       crosshair = new Crosshair(p5, world, camera, player);
-      lighting = new LightingCalculation(world, player, 45);
+      lighting = new LightingCalculation(world, player);
 
       finishedLoading = true;
     });

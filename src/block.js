@@ -175,7 +175,7 @@ export class Block {
     p5.stroke(0);
     p5.fill(255);
     p5.text(
-      `${this.type} (${this.xIndex},${this.yIndex}) Light: ${this.lightLevel} Cave: ${this.world.terrainGenerator.getCaveValue(this.xIndex, this.yIndex)}`,
+      `${this.type} (${this.xIndex},${this.yIndex}) Light: ${this.lightLevel.toFixed(3)} ${this.isBackground ? "background" : ""}`,
       this.screenX,
       this.screenY - 10,
     );

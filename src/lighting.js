@@ -7,129 +7,121 @@ import {
   BLOCK_SIZE,
   MAX_SKY_LIGHT,
   MIN_SKY_LIGHT,
+  WIDTH,
 } from "./config.js";
 
-export default class LightingCalculation {
-  constructor(world, player, sunDegrees) {
-    this.world = world;
-    this.player = player;
-    this.sunDegrees = sunDegrees;
+/** @typedef {import("./world.js").default} World */
+/** @typedef {import("./player.js").default} Player */
 
+export default class LightingCalculation {
+  /**
+   * @param {World} world
+   * @param {Player} player
+   */
+  constructor(world, player) {
+    /** @type {World} */
+    this.world = world;
+    /** @type {Player} */
+    this.player = player;
+
+    /** @type {number} */
     this.skyLightLevel = MAX_SKY_LIGHT;
   }
 
-  #getSunSlope() {
-    return this.sunDegrees === 90
-      ? null
-      : Math.tan((Math.PI / 180) * this.sunDegrees);
+  /**
+   * Update the light levels.
+   */
+  updateLightLevels() {
+    // this.#updateLightLevelsInRange(
+    //   Math.floor(this.player.x - Math.ceil(WIDTH / 2 / BLOCK_SIZE)),
+    //   Math.ceil(this.player.x + Math.ceil(WIDTH / 2 / BLOCK_SIZE)),
+    // );
+    const [chunkStart, chunkEnd] = this.world.getChunkGenerationRange(this.player.x);
+    this.#updateLightLevelsInRange(
+      chunkStart * CHUNK_WIDTH,
+      (chunkEnd - 1) * CHUNK_WIDTH
+    );
   }
 
-  #traceSkyLight(startX, slope) {
-    const maxY = Math.min(
-      Math.ceil(this.player.y + (1.5 * HEIGHT) / BLOCK_SIZE),
-      MAX_HEIGHT,
-    );
-    const minY = Math.max(
-      Math.floor(this.player.y - (2 * HEIGHT) / BLOCK_SIZE),
-      0,
-    );
+  /**
+   * Update the light levels in the x index range given.
+   * @param {number} xStart
+   * @param {number} xEnd
+   */
+  #updateLightLevelsInRange(xStart, xEnd) {
+    let missedBlocks = [];
 
-    let xOffset = -(1 / slope) * maxY;
-    let dx, dy;
+    const h = Math.ceil(HEIGHT / BLOCK_SIZE);
+    const yStart = Math.max(0, (Math.floor(this.player.y / h) - 1) * h);
+    const yEnd = Math.min(MAX_HEIGHT, (Math.floor(this.player.y / h) + 2) * h);
+    
+    for (let x = xStart; x <= xEnd; x++) {
+      let lightLevel = this.skyLightLevel;
+      let prevBlockIsBg = false;
 
-    if (slope === null) {
-      dx = 0;
-      dy = 1;
-    } else {
-      if (Math.abs(slope) > 1) {
-        dx = 1 / slope;
-        dy = 1;
-      } else if (Math.abs(slope) < 1) {
-        dx = 1 * (slope / Math.abs(slope));
-        dy = slope;
-      } else {
-        dx = 1;
-        dy = 1;
+      let stopped = false;
+
+      for (let y = yStart; y < yEnd; y++) {
+        const block = this.world.getBlockAtBlockIndex(x, y);
+        block.lightLevel = 0;
+
+        if (stopped) {
+          missedBlocks.push(block);
+          continue;
+        }
+
+        block.lightLevel = lightLevel;
+
+        if (block.type === BlockType.AIR) continue;
+        else if (block.isBackground) {
+          if (!prevBlockIsBg) lightLevel -= block.opacity;
+        } else lightLevel -= block.opacity;
+
+        prevBlockIsBg = block.isBackground;
+
+        if (lightLevel <= 0) stopped = true;
       }
     }
 
-    let x = xOffset + startX;
-    let y = 0;
-
-    let light = this.skyLightLevel;
-    let shadedBlocks = [];
-    while (y < maxY) {
-      const block = this.world.getBlockAtBlockIndex(x, y);
-
-      if (block) {
-        block.lightLevel = light;
-        if (y > minY && light === 0) shadedBlocks.push(block);
-        if (!block.isBackground)
-          light = Utils.clamp(light - block.opacity, 0, 1);
-      }
-
-      x += dx;
-      y += dy;
-    }
-
-    return shadedBlocks;
+    if (missedBlocks.length) this.#smoothLighting(missedBlocks);
   }
 
-  #fillLight(shadedBlocks, visited, block) {
-    if (!block) return;
+  /**
+   * @param {Block[]} missedBlocks
+   */
+  #smoothLighting(missedBlocks) {
+    const checked = [];
+    for (let iter = 0; iter < 6; iter++) {
+      const checkedIter = [];
+      
+      missedBlocks.forEach(block => {
+        if (checked.includes(block)) return;
 
-    if (visited.includes(block)) return block.lightLevel; // block already calculated
-
-    visited.push(block);
-
-    const neighbors = block.getNeighbors();
-    neighbors.forEach((b) => {
-      // neighbor already/is to be calculated in recursive algorithm
-      if (shadedBlocks.includes(b))
-        block.lightLevel = Math.max(
-          block.lightLevel,
-          this.#fillLight(shadedBlocks, visited, b) *
-            this.#diffuseLightFactor(block, b),
-        );
-      // neighbor already calculated in iterative algorithm
-      else
-        block.lightLevel = Math.max(
-          block.lightLevel,
-          b.lightLevel * this.#diffuseLightFactor(block, b),
-        );
-    });
-
-    return block.lightLevel;
+        const neighbors = block.getNeighbors();
+        let validCounter = 0;
+        neighbors.forEach(neighbor => {
+          if (!missedBlocks.includes(neighbor) || checked.includes(neighbor)) {
+            if (!checkedIter.includes(block)) checkedIter.push(block);
+            block.lightLevel += this.#diffuseLightFactor(block, neighbor) * neighbor.lightLevel;
+            validCounter++;
+          }
+        });
+        if (validCounter)
+          block.lightLevel /= validCounter;
+      });
+      
+      checked.push(...checkedIter);
+    }
   }
 
   #diffuseLightFactor(recipient, neighbor) {
     return (
-      (neighbor.type === BlockType.AIR ? 0.9 : 0.5) -
+      (neighbor.type === BlockType.AIR ? 0.9 : 0.6) -
       (recipient.xIndex !== neighbor.xIndex &&
       recipient.yIndex !== neighbor.yIndex
         ? 0.41
         : 0)
     );
-  }
-
-  updateLightLevels() {
-    if (this.sunDegrees <= 0 || this.sunDegrees >= 180) return;
-
-    const slope = this.#getSunSlope();
-    const [start, stop] = this.world.getChunkGenerationRange(
-      Math.floor(this.player.x),
-    );
-    let shadedBlocks = [];
-
-    for (
-      let i = start * CHUNK_WIDTH;
-      i < (stop + 1) * CHUNK_WIDTH + CHUNK_WIDTH;
-      i += 0.5
-    ) {
-      shadedBlocks = shadedBlocks.concat(this.#traceSkyLight(i, slope));
-    }
-
-    this.#fillLight(shadedBlocks, [], shadedBlocks[0]);
   }
 
   updateSun(millis) {
